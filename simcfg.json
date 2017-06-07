@@ -1,0 +1,55 @@
+{
+	"simId": "developmentTest",
+	"simTimeout": 200000,
+	"dataStep": 200,
+	"threeDof": 0,
+	"seeds": [0, 0],
+	"initStates": [
+		[0.0,0.15,0, 0,0,0, -0.7071,-0.7071, 0, 0, 0,0,0],
+		[0.0,-0.15,0, 0,0,0, 0,0,0.7071,-0.7071, 0,0,0]
+	],
+	"userFiles": [
+		"libsph1.so",
+		"libsph2.so"
+	],
+	"gameVariables":[
+	{
+		"name": "zoneX_cm",
+		"type": "int",
+		"def": 0,
+		"min": -71,
+		"max": 70
+	},
+	{
+		"name": "zoneY_cm",
+		"type": "int",
+		"def": 0,
+		"min": -71,
+		"max": 70
+	},
+	{
+		"name": "zoneZ_cm",
+		"type": "int",
+		"def": 0,
+		"min": -71,
+		"max": 70
+	}
+],
+	"commFile": "libSimCommManager.so",
+	"seedCfg": {
+		"seedVer": 2,
+		"nSeeds": 106,
+		"seeds": {		
+			"gyroNoiseSeed": [0, 2],
+			"accelNoiseSeed": [3, 5],
+			"rxOkSeed": [6, 29],
+			"rxBiasSeed": [30, 53],
+			"rxDistBiasSeed": [54, 77],
+			"distNoiseSeed": [78, 101],
+			"bcnBiasSeed": [102, 102],
+			"thrNoiseSeed": [103, 103],
+			"satPropsSeed": [104, 104],
+			"scsRandSeed": [105, 105]		
+		}
+	}
+}

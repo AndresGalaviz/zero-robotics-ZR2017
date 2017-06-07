@@ -1,0 +1,1 @@
+-x -osphout.out -ic:\ti\c6000\bios\lib -ic:\ti\c6000\rtdx\lib -ic:\ti\C6000\xdais\lib -ic:\ti\c6000\cgtools\lib -q -c -msphout.map zr.obj Z:\var\zr\svn\ZeroRobotics\Games\PHASE\codesize\sphlib.lib .\flight_projectcfg.cmd
