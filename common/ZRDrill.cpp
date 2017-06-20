@@ -35,6 +35,7 @@ bool ZeroRoboticsGame::startDrill() {
                 pimpl.challInfo.world.geyserLocations[i][0] = playerX;
                 pimpl.challInfo.world.geyserLocations[i][1] = playerY;
                 pimpl.challInfo.me.samples.samplesHeld.reset(); // Drop all samples
+                GAME_TRACE(("[%d] geyser [%d][%d] | ", apiImpl.api->getTime(), playerX, playerY));
                 // TODO: Add code for "stunning" satellite in 2D and flying it up in 3D
                 return false;
             }

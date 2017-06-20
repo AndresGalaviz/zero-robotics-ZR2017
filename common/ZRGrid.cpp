@@ -18,14 +18,12 @@ void ZeroRoboticsGameImpl::initializeWorld(int concentrationX, int concentration
             challInfo.world.peakConcentration[0] = -GRID_X_SIDE + 2 + (rand() % (int)(2*(GRID_X_SIDE - 2)));
             challInfo.world.peakConcentration[1] = (rand() % (int)(GRID_Y_SIDE - 2));
         } while(std::abs(challInfo.world.peakConcentration[0]) < (BASE_SIDE_SIZE + 1));
+
         // Analyzer is the middle of cells [x, y, z] = 0, 12, 0
         challInfo.world.analyzerCoords[0] = CELL_SIZE/2;
         challInfo.world.analyzerCoords[1] = GRID_Y_SIDE/2;
         challInfo.world.analyzerCoords[2] = 0;
 
-        #ifdef SHOW_GAME_TRACE
-        printf("Created Init information: %d %d\n", challInfo.world.peakConcentration[0], challInfo.world.peakConcentration[1]);
-        #endif
     } else {
         challInfo.world.peakConcentration[0] = -1*concentrationX - 1;
         challInfo.world.peakConcentration[1] = -1*concentrationY - 1;
@@ -33,10 +31,10 @@ void ZeroRoboticsGameImpl::initializeWorld(int concentrationX, int concentration
         challInfo.world.analyzerCoords[0] = -CELL_SIZE/2;
         challInfo.world.analyzerCoords[1] = -GRID_Y_SIDE/2;
         challInfo.world.analyzerCoords[2] = 0;
-        #ifdef SHOW_GAME_TRACE
-        printf("Assigned Init information: %d %d\n", challInfo.world.peakConcentration[0], challInfo.world.peakConcentration[1]);
-        #endif
     }
+    GAME_TRACE(("[%d]|peakConcentrationX:%d|peakConcentrationY:%d|", apiImpl.api->getTime(), challInfo.world.peakConcentration[0], challInfo.world.peakConcentration[1]));
+    GAME_TRACE(("[%d]|analyzerCoordsX:%d|analyzerCoordsY:%d|analyzerCoordsZ:%d", 
+                apiImpl.api->getTime(), challInfo.world.analyzerCoords[0], challInfo.world.analyzerCoords[1], challInfo.world.analyzerCoords[3]));
     // Available concentrations
     int concentrations[] = {HIGH_CONCENTRATION, MED_CONCENTRATION, LOW_CONCENTRATION, MIN_CONCENTRATION};
     // Initialize grid, only traverse one side
