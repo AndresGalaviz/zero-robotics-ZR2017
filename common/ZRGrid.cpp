@@ -32,9 +32,9 @@ void ZeroRoboticsGameImpl::initializeWorld(int concentrationX, int concentration
         challInfo.world.analyzerCoords[1] = -GRID_Y_SIDE/2;
         challInfo.world.analyzerCoords[2] = 0;
     }
-    GAME_TRACE(("[%d]|peakConcentrationX:%d|peakConcentrationY:%d|", apiImpl.api->getTime(), challInfo.world.peakConcentration[0], challInfo.world.peakConcentration[1]));
-    GAME_TRACE(("[%d]|analyzerCoordsX:%d|analyzerCoordsY:%d|analyzerCoordsZ:%d", 
-                apiImpl.api->getTime(), challInfo.world.analyzerCoords[0], challInfo.world.analyzerCoords[1], challInfo.world.analyzerCoords[3]));
+    GAME_TRACE(("[%d]|peakConcentration:%d,%d|", challInfo.currentTime, challInfo.world.peakConcentration[0], challInfo.world.peakConcentration[1]));
+    GAME_TRACE(("[%d]|analyzerCoords:%d,%d,%d|", 
+                challInfo.currentTime, challInfo.world.analyzerCoords[0], challInfo.world.analyzerCoords[1], challInfo.world.analyzerCoords[2]));
     // Available concentrations
     int concentrations[] = {HIGH_CONCENTRATION, MED_CONCENTRATION, LOW_CONCENTRATION, MIN_CONCENTRATION};
     // Initialize grid, only traverse one side
@@ -83,6 +83,8 @@ void ZeroRoboticsGameImpl::turnOffOldGeysers()
                 challInfo.world.geyserActiveTime[i] = -1;
                 challInfo.world.geyserLocations[i][0] = -1;
                 challInfo.world.geyserLocations[i][1] = -1;
+                // Game trace: X,Y,0 -> Location for turning off geyser
+                GAME_TRACE(("[%d]geyserLocations:%d,%d,0|", api->getTime(), geyserLocations[i][0], geyserLocations[i][1]));
             }
         }
     }
