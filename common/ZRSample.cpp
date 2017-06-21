@@ -47,6 +47,7 @@ int ZeroRoboticsGame::pickupSample()
                 pimpl.challInfo.me.samples.samplesHeld[MAX_SAMPLE_NUMBER - i - 1] = 1;
                 pimpl.challInfo.me.samples.samplesAnalyzed[MAX_SAMPLE_NUMBER - i - 1] = 0;
                 pimpl.challInfo.me.samples.sampleConcentrations[i] = pimpl.challInfo.world.grid[playerY][playerX].concentration;
+                GAME_TRACE(("[%d]samplesPicked:%d,1|", challInfo.currentTime, MAX_SAMPLE_NUMBER - i - 1));
                 return i;
             }
         }
@@ -63,6 +64,8 @@ bool ZeroRoboticsGame::discardSample(int sampleID)
         return false;
     }
     pimpl.challInfo.me.samples.samplesHeld[MAX_SAMPLE_NUMBER - sampleID - 1] = 0;
+    GAME_TRACE(("[%d]samplesPicked:%d,0|", challInfo.currentTime, MAX_SAMPLE_NUMBER - sampleID - 1));
+
     return true;
 }
 
@@ -74,6 +77,10 @@ bool ZeroRoboticsGame::deliverSample(int sampleID)
         pimpl.challInfo.me.samples.samplesAnalyzed[MAX_SAMPLE_NUMBER - sampleID - 1] = 1;
         // Concentration points + 2 points for delivering
         pimpl.challInfo.me.score += .5*pimpl.challInfo.me.samples.sampleConcentrations[sampleID] + 2; 
+        GAME_TRACE(("[%d]samplesPicked:%d,0|", challInfo.currentTime, MAX_SAMPLE_NUMBER - sampleID - 1));
+        GAME_TRACE(("[%d]samplesAnalyzed:%d,1|", challInfo.currentTime, MAX_SAMPLE_NUMBER - sampleID - 1));
+        GAME_TRACE(("[%d]sampleConcentrations:%d,%f|", 
+                    challInfo.currentTime, MAX_SAMPLE_NUMBER - sampleID - 1, pimpl.challInfo.me.samples.sampleConcentrations[sampleID]));
         return true;
     }
     return false;
