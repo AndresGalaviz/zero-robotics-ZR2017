@@ -35,16 +35,20 @@ bool ZeroRoboticsGame::startDrill() {
                 pimpl.challInfo.world.geyserLocations[i][0] = playerX;
                 pimpl.challInfo.world.geyserLocations[i][1] = playerY;
                 pimpl.challInfo.me.samples.samplesHeld.reset(); // Drop all samples
+                GAME_TRACE(("[%d]geyserLocations:%d,%d,1|", challInfo.currentTime, geyserLocations[i][0], geyserLocations[i][1]));
                 // TODO: Add code for "stunning" satellite in 2D and flying it up in 3D
                 return false;
             }
         }
     }
+
+    GAME_TRACE(("[%d]drillEnabled:1|", challInfo.currentTime));
     pimpl.challInfo.me.drillEnabled = true;
     return true;
 }
 
 bool ZeroRoboticsGame::stopDrill() {
+    GAME_TRACE(("[%d]drillEnabled:0|", challInfo.currentTime));
     pimpl.challInfo.me.drillEnabled = false;
     return true;
 }

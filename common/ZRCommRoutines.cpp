@@ -51,6 +51,8 @@ void ZeroRoboticsGameImpl::processRXData(default_rfm_packet packet)
 		
 			dbg_short_packet DebugVecShort;
 			memcpy(DebugVecShort, &packet[PKT_DATA], sizeof(dbg_short_packet));
+			GAME_TRACE(("Initializing world. | "));
+
 			initializeWorld(DebugVecShort[0], DebugVecShort[1]);
 			// // special item packets
 			// if (DebugVecShort[15] == -32766)
@@ -380,45 +382,45 @@ void ZeroRoboticsGameImpl::sendDebug() {
 
 void ZeroRoboticsGameImpl::sendInit()
 {
-#ifndef ISS_FINALS
-  #if (SPHERE_ID == SPHERE1)
+	#ifndef ISS_FINALS
+  	#if (SPHERE_ID == SPHERE1)
     dbg_short_packet DebugVecShort;
     dbg_ushort_packet DebugVecUShort;
     dbg_float_packet DebugVecFloat;
 	
+	GAME_TRACE(("Sending world initialization|"));
+	// initialize packets to 0
+	memset(DebugVecShort,  0, sizeof(dbg_short_packet)); // float[16]
+	memset(DebugVecUShort,  0, sizeof(dbg_ushort_packet));
+	memset(DebugVecFloat,  0, sizeof(dbg_float_packet));
 
-  // initialize packets to 0
-  memset(DebugVecShort,  0, sizeof(dbg_short_packet)); // float[16]
-  memset(DebugVecUShort,  0, sizeof(dbg_ushort_packet));
-  memset(DebugVecFloat,  0, sizeof(dbg_float_packet));
+	DebugVecShort[0] = (short) challInfo.world.peakConcentration[0];
+	DebugVecShort[1] = (short) challInfo.world.peakConcentration[1];
 
-  DebugVecShort[0] = (short) challInfo.world.peakConcentration[0];
-  DebugVecShort[1] = (short) challInfo.world.peakConcentration[1];
+	DebugVecUShort[0] = (unsigned short) 0;
 
-  DebugVecUShort[0] = (unsigned short) 0;
-
-  #ifdef ALLIANCE
-  DebugVecUShort[2] = (unsigned short) 3;
-  #elif defined ZR3D
-  DebugVecUShort[2] = (unsigned short) 2;
-  #elif defined ZR2D
-  DebugVecUShort[2] = (unsigned short) 1;
-  #else
-  DebugVecUShort[2] = (unsigned short) 0;
-  #endif
+	#ifdef ALLIANCE
+	DebugVecUShort[2] = (unsigned short) 3;
+	#elif defined ZR3D
+	DebugVecUShort[2] = (unsigned short) 2;
+	#elif defined ZR2D
+	DebugVecUShort[2] = (unsigned short) 1;
+	#else
+	DebugVecUShort[2] = (unsigned short) 0;
+	#endif
 
 
-  commSendPacket(COMM_CHANNEL_STL, BROADCAST, 0, COMM_CMD_DBG_SHORT_SIGNED, (unsigned char *) DebugVecShort,0);
-  commSendPacket(COMM_CHANNEL_STL, BROADCAST, 0, COMM_CMD_DBG_SHORT_UNSIGNED, (unsigned char *) DebugVecUShort,0);
-  commSendPacket(COMM_CHANNEL_STL, BROADCAST, 0, COMM_CMD_DBG_FLOAT, (unsigned char *) DebugVecFloat,0);
-  #endif
-  /*
-  #if (SPHERE_ID == SPHERE2)
-  dbg_short_packet DebugVecShort;
-  DebugVecShort[0] = 0;
+	commSendPacket(COMM_CHANNEL_STL, BROADCAST, 0, COMM_CMD_DBG_SHORT_SIGNED, (unsigned char *) DebugVecShort,0);
+	commSendPacket(COMM_CHANNEL_STL, BROADCAST, 0, COMM_CMD_DBG_SHORT_UNSIGNED, (unsigned char *) DebugVecUShort,0);
+	commSendPacket(COMM_CHANNEL_STL, BROADCAST, 0, COMM_CMD_DBG_FLOAT, (unsigned char *) DebugVecFloat,0);
+	#endif
+	/*
+	#if (SPHERE_ID == SPHERE2)
+	dbg_short_packet DebugVecShort;
+	DebugVecShort[0] = 0;
 
-  commSendPacket(COMM_CHANNEL_STL, BROADCAST, 0, COMM_CMD_DBG_SHORT_SIGNED, (unsigned char *) DebugVecShort,0);
-  #endif
-  */
-#endif
+	commSendPacket(COMM_CHANNEL_STL, BROADCAST, 0, COMM_CMD_DBG_SHORT_SIGNED, (unsigned char *) DebugVecShort,0);
+	#endif
+	*/
+	#endif
 }
