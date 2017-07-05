@@ -248,8 +248,8 @@ void ZeroRoboticsGameImpl::processRXData(default_rfm_packet packet)
 
 void ZeroRoboticsGameImpl::sendDebug() {
   dbg_short_packet  DebugVecShort; // short[16]
-  dbg_ushort_packet DebugVecUShort; // ushort[16]
-  dbg_float_packet  DebugVecFloat; // float[8]
+  dbg_ushort_packet DebugVecUShort; // ushort[16] Zone Error, Points per second, receiver, and game type
+  dbg_float_packet  DebugVecFloat; // float[8] Fuel and Score 
   unsigned int tstep;
 
   // send debug after estimator convergence
