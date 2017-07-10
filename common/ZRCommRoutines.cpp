@@ -267,31 +267,25 @@ void ZeroRoboticsGameImpl::sendDebug() {
 //   {
   
 //   // normal game packages
-//   tstep = apiImpl.api->getTime();
+  tstep = apiImpl.api->getTime();
 	
-//   if (!tstep) return; // only send starting with time 1, since time 0 can cause problems with initialization
+  if (!tstep) return; // only send starting with time 1, since time 0 can cause problems with initialization
 
 //   // initialize all packets to 0
-//   memset(DebugVecShort,  0, sizeof(dbg_short_packet));
-//   memset(DebugVecUShort, 0, sizeof(dbg_ushort_packet));
-//   memset(DebugVecFloat,  0, sizeof(dbg_float_packet));
+  memset(DebugVecShort,  0, sizeof(dbg_short_packet));
+  memset(DebugVecUShort, 0, sizeof(dbg_ushort_packet));
+  memset(DebugVecFloat,  0, sizeof(dbg_float_packet));
 
 //   // debug short: item locations
-//   DebugVecShort[0]  = (short)(tstep*10); //Timestamp
-
-//   #if (SPHERE_ID == SPHERE1)
-//   int offset = 0;
-//   int stop = 4;
-//   #else
-//   int offset = 4;
-//   int stop = 3;
-//   #endif
+  DebugVecShort[0]  = (short)(tstep*10); //Timestamp
 
 //   for (int i = 0; i < stop; i++) {
 //     for(int j = 1; j <= 3; j++) {
-//       DebugVecShort[3*i+j] = (short)(10000 * challInfo.item[i+offset].zrState[j-1]);
+//       DebugVecShort[3*i+j] = (short)(10000 * challInfo.item[i+offset].zrState[j-1]); //Fills in our dS array with the position of the 4 items for pos 1-12
 //     }
 //   }
+//
+//init[2] = (short)((char)height1<<8)+((char)height2)
 
 
 
