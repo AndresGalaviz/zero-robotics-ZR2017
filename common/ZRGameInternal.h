@@ -178,6 +178,9 @@ public:
 	 * \param concentrationY Location in the Y axis of the peak concentration(This is mirrored depending on SPHEREID)
 	 */
 	void initializeWorld(int concentrationX = -1, int concentrationY = -1);
+	#ifdef ZR3D
+	void initializeTerrainHeight();
+	#endif
 	
 	void subtractScore();
 	/**
