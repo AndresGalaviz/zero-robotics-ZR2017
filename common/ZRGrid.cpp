@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "Constants.h"
+#include <time.h>
 // TODO: Verify crash into surface
 
 /*****************HIDDEN FUNCTIONS*****************/
@@ -134,6 +135,7 @@ bool ZeroRoboticsGame::atBaseStation(float pos[3])
 }
 
 void ZeroRoboticsGameImpl::initializeTerrainHeight(){
+    srand (time(NULL));    
     #ifdef ZR3D
         for(int i = 0;i<Y_SIZE;i++){
             for(int j = 0;j<XZ_SIZE;j++){
