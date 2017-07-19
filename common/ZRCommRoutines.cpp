@@ -381,7 +381,7 @@ void ZeroRoboticsGameImpl::sendInit()
     dbg_short_packet DebugVecShort;
     dbg_ushort_packet DebugVecUShort;
     dbg_float_packet DebugVecFloat;
-	
+
 	GAME_TRACE(("Sending world initialization|"));
 	// initialize packets to 0
 	memset(DebugVecShort,  0, sizeof(dbg_short_packet)); // float[16]
@@ -390,7 +390,7 @@ void ZeroRoboticsGameImpl::sendInit()
 
 	DebugVecShort[0] = (short) challInfo.world.peakConcentration[0];
 	DebugVecShort[1] = (short) challInfo.world.peakConcentration[1];
-
+	
 	DebugVecUShort[0] = (unsigned short) 0;
 
 	#ifdef ALLIANCE
