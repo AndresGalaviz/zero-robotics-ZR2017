@@ -392,8 +392,10 @@ void ZeroRoboticsGameImpl::sendInit()
 	DebugVecShort[1] = (short) challInfo.world.peakConcentration[1];
 	commSendPacket(COMM_CHANNEL_STL, BROADCAST, 0, COMM_CMD_DBG_SHORT_SIGNED, (unsigned char *) DebugVecShort,0);
 
-	for(int i = 0;i<20;i++){	
+	for(int i = 0;i<2;i++){	
 		modify_init(DebugVecShort,i);
+		for(int i =0;i<10;i++)
+			printf("%d ",DebugVecShort[i]);
 		commSendPacket(COMM_CHANNEL_STL, BROADCAST, 0, COMM_CMD_DBG_SHORT_SIGNED, (unsigned char *) DebugVecShort,0);
 	}
 
