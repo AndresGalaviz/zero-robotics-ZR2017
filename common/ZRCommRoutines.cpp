@@ -32,14 +32,8 @@ extern "C" {
 #include "comm.h"
 }
 
-#ifndef ALLIANCE
-	#define NUM_RX_ITEMS 3		// the 3 scoring items
-#else
-	#define NUM_RX_ITEMS 5		// in alliance also sends location of adapter ports
-#endif
 
-void ZeroRoboticsGameImpl::processRXData(default_rfm_packet packet)
-{
+void ZeroRoboticsGameImpl::processRXData(default_rfm_packet packet){
 	int man_num = ctrlManeuverNumGet();
 	
 	
@@ -285,12 +279,12 @@ void ZeroRoboticsGameImpl::sendDebug() {
 //     }
 //   }
 //
-//init[2] = (short)((char)height1<<8)+((char)height2)
+
 
 
 
 //   // unsigned short debug packet: status of game variables
-//   DebugVecUShort[0] = (unsigned short)(tstep*10); //Timestamp
+  DebugVecUShort[0] = (unsigned short)(tstep*10); //Timestamp
 
 
 
@@ -299,21 +293,21 @@ void ZeroRoboticsGameImpl::sendDebug() {
 //   DebugVecUShort[11] = (unsigned short) challInfo.me.hasReceiver;
 
 //   //Float debug packet: score, fuel, forces
-//   DebugVecFloat[0] = (float)tstep;
-//   DebugVecFloat[1] = (float) (game->getScore());
-//   DebugVecFloat[2] = game->getFuelRemaining() / ((double)PROP_ALLOWED_SECONDS);
-//   memcpy(&DebugVecFloat[5], challInfo.me.userForces, 3*sizeof(float)); //Forces for reference
+  DebugVecFloat[0] = (float)tstep;
+  DebugVecFloat[1] = (float) (game->getScore());
+  DebugVecFloat[2] = game->getFuelRemaining() / ((double)PROP_ALLOWED_SECONDS);
+  memcpy(&DebugVecFloat[5], challInfo.me.userForces, 3*sizeof(float)); //Forces for reference
 
 //   //Send packets to other SPHERES/ground/sim; do not modify below this line
-//   commSendPacket(COMM_CHANNEL_STL, BROADCAST, 0, COMM_CMD_DBG_SHORT_SIGNED, (unsigned char *) DebugVecShort,0);
-//   commSendPacket(COMM_CHANNEL_STL, BROADCAST, 0, COMM_CMD_DBG_FLOAT, (unsigned char *) DebugVecFloat,0);
-//   commSendPacket(COMM_CHANNEL_STL, BROADCAST, 0, COMM_CMD_DBG_SHORT_UNSIGNED, (unsigned char *) DebugVecUShort,0);
+  commSendPacket(COMM_CHANNEL_STL, BROADCAST, 0, COMM_CMD_DBG_SHORT_SIGNED, (unsigned char *) DebugVecShort,0);
+  commSendPacket(COMM_CHANNEL_STL, BROADCAST, 0, COMM_CMD_DBG_FLOAT, (unsigned char *) DebugVecFloat,0);
+  commSendPacket(COMM_CHANNEL_STL, BROADCAST, 0, COMM_CMD_DBG_SHORT_UNSIGNED, (unsigned char *) DebugVecUShort,0);
 
-// 	//commSendPacket(COMM_CHANNEL_STL, BROADCAST, 0, COMM_CMD_DBG_SHORT_SIGNED, (unsigned char*) DebugVecItem, 0);
-//   #ifdef ZRSIMULATION
-//   apiImpl.ZRUserDbgVec[0] = (float)tstep;
-//   commSendPacket(COMM_CHANNEL_STL, GROUND, sysIdentityGet(), COMM_CMD_DBG_ZRUSER, (unsigned char *) apiImpl.ZRUserDbgVec,0);
-//   #endif
+	//commSendPacket(COMM_CHANNEL_STL, BROADCAST, 0, COMM_CMD_DBG_SHORT_SIGNED, (unsigned char*) DebugVecItem, 0);
+  #ifdef ZRSIMULATION
+  apiImpl.ZRUserDbgVec[0] = (float)tstep;
+  commSendPacket(COMM_CHANNEL_STL, GROUND, sysIdentityGet(), COMM_CMD_DBG_ZRUSER, (unsigned char *) apiImpl.ZRUserDbgVec,0);
+  #endif
 //   }
 }
 
@@ -384,7 +378,7 @@ void ZeroRoboticsGameImpl::sendInit()
 
 	GAME_TRACE(("Sending world initialization|"));
 	// initialize packets to 0
-	memset(DebugVecShort,  0, sizeof(dbg_short_packet)); // float[16]
+	memset(DebugVecShort,  0, sizeof(dbg_short_packet)); 
 	memset(DebugVecUShort,  0, sizeof(dbg_ushort_packet));
 	memset(DebugVecFloat,  0, sizeof(dbg_float_packet));
 
@@ -394,8 +388,6 @@ void ZeroRoboticsGameImpl::sendInit()
 
 	for(int i = 0;i<2;i++){	
 		modify_init(DebugVecShort,i);
-		for(int i =0;i<10;i++)
-			printf("%d ",DebugVecShort[i]);
 		commSendPacket(COMM_CHANNEL_STL, BROADCAST, 0, COMM_CMD_DBG_SHORT_SIGNED, (unsigned char *) DebugVecShort,0);
 	}
 
