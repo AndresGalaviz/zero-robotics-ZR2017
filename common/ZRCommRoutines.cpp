@@ -32,17 +32,13 @@ extern "C" {
 #include "comm.h"
 }
 
-#ifndef ALLIANCE
-	#define NUM_RX_ITEMS 3		// the 3 scoring items
-#else
-	#define NUM_RX_ITEMS 5		// in alliance also sends location of adapter ports
-#endif
 
-void ZeroRoboticsGameImpl::processRXData(default_rfm_packet packet)
-{
+void ZeroRoboticsGameImpl::processRXData(default_rfm_packet packet){
 	int man_num = ctrlManeuverNumGet();
 	
-	
+		// maneuver 3 = game mode
+	// maneuver 202 = end game (get final score)
+	// maneuver 204 = terminate
 	switch (packet[PKT_CM])
 	{
 		case COMM_CMD_DBG_SHORT_SIGNED:
@@ -248,8 +244,8 @@ void ZeroRoboticsGameImpl::processRXData(default_rfm_packet packet)
 
 void ZeroRoboticsGameImpl::sendDebug() {
   dbg_short_packet  DebugVecShort; // short[16]
-  dbg_ushort_packet DebugVecUShort; // ushort[16]
-  dbg_float_packet  DebugVecFloat; // float[8]
+  dbg_ushort_packet DebugVecUShort; // ushort[16] Zone Error, Points per second, (for init) receiver, and game type
+  dbg_float_packet  DebugVecFloat; // float[8] Fuel and Score 
   unsigned int tstep;
 
   // send debug after estimator convergence
@@ -267,36 +263,30 @@ void ZeroRoboticsGameImpl::sendDebug() {
 //   {
   
 //   // normal game packages
-//   tstep = apiImpl.api->getTime();
+  tstep = apiImpl.api->getTime();
 	
-//   if (!tstep) return; // only send starting with time 1, since time 0 can cause problems with initialization
+  if (!tstep) return; // only send starting with time 1, since time 0 can cause problems with initialization
 
 //   // initialize all packets to 0
-//   memset(DebugVecShort,  0, sizeof(dbg_short_packet));
-//   memset(DebugVecUShort, 0, sizeof(dbg_ushort_packet));
-//   memset(DebugVecFloat,  0, sizeof(dbg_float_packet));
+  memset(DebugVecShort,  0, sizeof(dbg_short_packet));
+  memset(DebugVecUShort, 0, sizeof(dbg_ushort_packet));
+  memset(DebugVecFloat,  0, sizeof(dbg_float_packet));
 
 //   // debug short: item locations
-//   DebugVecShort[0]  = (short)(tstep*10); //Timestamp
-
-//   #if (SPHERE_ID == SPHERE1)
-//   int offset = 0;
-//   int stop = 4;
-//   #else
-//   int offset = 4;
-//   int stop = 3;
-//   #endif
+  DebugVecShort[0]  = (short)(tstep*10); //Timestamp
 
 //   for (int i = 0; i < stop; i++) {
 //     for(int j = 1; j <= 3; j++) {
-//       DebugVecShort[3*i+j] = (short)(10000 * challInfo.item[i+offset].zrState[j-1]);
+//       DebugVecShort[3*i+j] = (short)(10000 * challInfo.item[i+offset].zrState[j-1]); //Fills in our dS array with the position of the 4 items for pos 1-12
 //     }
 //   }
+//
+
 
 
 
 //   // unsigned short debug packet: status of game variables
-//   DebugVecUShort[0] = (unsigned short)(tstep*10); //Timestamp
+  DebugVecUShort[0] = (unsigned short)(tstep*10); //Timestamp
 
 
 
@@ -305,21 +295,21 @@ void ZeroRoboticsGameImpl::sendDebug() {
 //   DebugVecUShort[11] = (unsigned short) challInfo.me.hasReceiver;
 
 //   //Float debug packet: score, fuel, forces
-//   DebugVecFloat[0] = (float)tstep;
-//   DebugVecFloat[1] = (float) (game->getScore());
-//   DebugVecFloat[2] = game->getFuelRemaining() / ((double)PROP_ALLOWED_SECONDS);
-//   memcpy(&DebugVecFloat[5], challInfo.me.userForces, 3*sizeof(float)); //Forces for reference
+  DebugVecFloat[0] = (float)tstep;
+  DebugVecFloat[1] = (float) (game->getScore());
+  DebugVecFloat[2] = game->getFuelRemaining() / ((double)PROP_ALLOWED_SECONDS);
+  memcpy(&DebugVecFloat[5], challInfo.me.userForces, 3*sizeof(float)); //Forces for reference
 
 //   //Send packets to other SPHERES/ground/sim; do not modify below this line
-//   commSendPacket(COMM_CHANNEL_STL, BROADCAST, 0, COMM_CMD_DBG_SHORT_SIGNED, (unsigned char *) DebugVecShort,0);
-//   commSendPacket(COMM_CHANNEL_STL, BROADCAST, 0, COMM_CMD_DBG_FLOAT, (unsigned char *) DebugVecFloat,0);
-//   commSendPacket(COMM_CHANNEL_STL, BROADCAST, 0, COMM_CMD_DBG_SHORT_UNSIGNED, (unsigned char *) DebugVecUShort,0);
+  commSendPacket(COMM_CHANNEL_STL, BROADCAST, 0, COMM_CMD_DBG_SHORT_SIGNED, (unsigned char *) DebugVecShort,0);
+  commSendPacket(COMM_CHANNEL_STL, BROADCAST, 0, COMM_CMD_DBG_FLOAT, (unsigned char *) DebugVecFloat,0);
+  commSendPacket(COMM_CHANNEL_STL, BROADCAST, 0, COMM_CMD_DBG_SHORT_UNSIGNED, (unsigned char *) DebugVecUShort,0);
 
-// 	//commSendPacket(COMM_CHANNEL_STL, BROADCAST, 0, COMM_CMD_DBG_SHORT_SIGNED, (unsigned char*) DebugVecItem, 0);
-//   #ifdef ZRSIMULATION
-//   apiImpl.ZRUserDbgVec[0] = (float)tstep;
-//   commSendPacket(COMM_CHANNEL_STL, GROUND, sysIdentityGet(), COMM_CMD_DBG_ZRUSER, (unsigned char *) apiImpl.ZRUserDbgVec,0);
-//   #endif
+	//commSendPacket(COMM_CHANNEL_STL, BROADCAST, 0, COMM_CMD_DBG_SHORT_SIGNED, (unsigned char*) DebugVecItem, 0);
+  #ifdef ZRSIMULATION
+  apiImpl.ZRUserDbgVec[0] = (float)tstep;
+  commSendPacket(COMM_CHANNEL_STL, GROUND, sysIdentityGet(), COMM_CMD_DBG_ZRUSER, (unsigned char *) apiImpl.ZRUserDbgVec,0);
+  #endif
 //   }
 }
 
@@ -387,15 +377,21 @@ void ZeroRoboticsGameImpl::sendInit()
     dbg_short_packet DebugVecShort;
     dbg_ushort_packet DebugVecUShort;
     dbg_float_packet DebugVecFloat;
-	
+
 	GAME_TRACE(("Sending world initialization|"));
 	// initialize packets to 0
-	memset(DebugVecShort,  0, sizeof(dbg_short_packet)); // float[16]
+	memset(DebugVecShort,  0, sizeof(dbg_short_packet)); 
 	memset(DebugVecUShort,  0, sizeof(dbg_ushort_packet));
 	memset(DebugVecFloat,  0, sizeof(dbg_float_packet));
 
 	DebugVecShort[0] = (short) challInfo.world.peakConcentration[0];
 	DebugVecShort[1] = (short) challInfo.world.peakConcentration[1];
+	commSendPacket(COMM_CHANNEL_STL, BROADCAST, 0, COMM_CMD_DBG_SHORT_SIGNED, (unsigned char *) DebugVecShort,0);
+
+	for(int i = 0;i<2;i++){	
+		modify_init(DebugVecShort,i);
+		commSendPacket(COMM_CHANNEL_STL, BROADCAST, 0, COMM_CMD_DBG_SHORT_SIGNED, (unsigned char *) DebugVecShort,0);
+	}
 
 	DebugVecUShort[0] = (unsigned short) 0;
 
@@ -410,7 +406,6 @@ void ZeroRoboticsGameImpl::sendInit()
 	#endif
 
 
-	commSendPacket(COMM_CHANNEL_STL, BROADCAST, 0, COMM_CMD_DBG_SHORT_SIGNED, (unsigned char *) DebugVecShort,0);
 	commSendPacket(COMM_CHANNEL_STL, BROADCAST, 0, COMM_CMD_DBG_SHORT_UNSIGNED, (unsigned char *) DebugVecUShort,0);
 	commSendPacket(COMM_CHANNEL_STL, BROADCAST, 0, COMM_CMD_DBG_FLOAT, (unsigned char *) DebugVecFloat,0);
 	#endif
@@ -423,4 +418,15 @@ void ZeroRoboticsGameImpl::sendInit()
 	#endif
 	*/
 	#endif
+}
+
+void ZeroRoboticsGameImpl::modify_init(short (&init_arr)[16],int i){
+	//init[2] = (short)((char)height1<<8)+((char)height2)
+	init_arr[0]=0; //time stamp of zero
+	init_arr[1]=i;//what column we're sending data about 
+	int counter = 2; //used for iterating through init_arr 
+    for(int j = 0;j<XZ_SIZE;j+=2){
+    	init_arr[counter]=(short)((char)challInfo.world.grid[i][j].height <<8)+((char)challInfo.world.grid[i][j+1].height ); //storing two different bytes of data in a single short 
+    	counter++;
+    } //Potentially send init array here?
 }

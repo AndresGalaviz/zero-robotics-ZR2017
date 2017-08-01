@@ -111,6 +111,9 @@ void ZeroRoboticsGameImpl::init()
 	#if SPHERE_ID==SPHERE1
 	// initialize world scenario
 	initializeWorld();
+	#ifdef ZR3D
+	initializeTerrainHeight();
+	#endif
 	#endif
 
 	// send information to ground and sat2 at the end of init

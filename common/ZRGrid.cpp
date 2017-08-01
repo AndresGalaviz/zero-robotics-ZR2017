@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "Constants.h"
+#include <time.h>
 // TODO: Verify crash into surface
 
 /*****************HIDDEN FUNCTIONS*****************/
@@ -75,6 +76,17 @@ void ZeroRoboticsGameImpl::initializeWorld(int concentrationX, int concentration
     #endif
 }
 
+
+void ZeroRoboticsGameImpl::initializeTerrainHeight(){
+    srand (time(NULL));    
+    for(int i = 0;i<Y_SIZE;i++){
+        for(int j = 0;j<XZ_SIZE;j++){
+                challInfo.world.grid[i][j].height = rand()%4+1;
+        }
+    }
+}
+
+
 void ZeroRoboticsGameImpl::turnOffOldGeysers()
 {
     for(int i = 0; i < 10; i++) {
@@ -132,3 +144,4 @@ bool ZeroRoboticsGame::atBaseStation(float pos[3])
     int posZ = std::abs(static_cast<int>(pos[2]/CELL_SIZE));
     return (posX <= BASE_SIDE_SIZE && posY <= BASE_SIDE_SIZE && posZ <= BASE_SIDE_SIZE);
 }
+
