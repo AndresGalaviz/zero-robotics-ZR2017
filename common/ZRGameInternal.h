@@ -50,7 +50,8 @@ public:
 	struct World
 	{
 		Cell				grid[Y_SIZE][XZ_SIZE]; // YX arrangement
-		float				analyzerCoords[3];
+		float				analyzer1Coords[3];
+		float 				analyzer2Coords[3];
 		int 				peakConcentration[2];
 		int					numActiveGeysers;
 		float 				geyserLocations[10][2]; // 10 geyser, 2D coordinates

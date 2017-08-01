@@ -285,12 +285,12 @@ void ZeroRoboticsGameImpl::sendDebug() {
 
 //   // unsigned short debug packet: status of game variables
   DebugVecUShort[0] = (unsigned short)(tstep*10); //Timestamp
+  DebugVecUShort[8] = (unsigned short ) (challInfo.me.hasAnalyzer+challInfo.other.hasAnalyzer);
 
 
 
-//   DebugVecUShort[8] = (unsigned short) challInfo.me.zone.numSPSheld;
-//   DebugVecUShort[10] = (unsigned short) challInfo.me.message;
-//   DebugVecUShort[11] = (unsigned short) challInfo.me.hasReceiver;
+  DebugVecUShort[10] = (unsigned short) challInfo.me.message;
+
 
 //   //Float debug packet: score, fuel, forces
   DebugVecFloat[0] = (float)tstep;
