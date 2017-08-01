@@ -21,21 +21,29 @@ void ZeroRoboticsGameImpl::initializeWorld(int concentrationX, int concentration
         } while(std::abs(challInfo.world.peakConcentration[0]) < (BASE_SIDE_SIZE + 1));
 
         // Analyzer is the middle of cells [x, y, z] = 0, 12, 0
-        challInfo.world.analyzerCoords[0] = CELL_SIZE/2;
-        challInfo.world.analyzerCoords[1] = GRID_Y_SIDE/2;
-        challInfo.world.analyzerCoords[2] = 0;
+        challInfo.world.analyzer1Coords[0] = CELL_SIZE/2;
+        challInfo.world.analyzer1Coords[1] = GRID_Y_SIDE/2;
+        challInfo.world.analyzer1Coords[2] = 0;
+        challInfo.world.analyzer2Coords[0] = -CELL_SIZE/2;
+        challInfo.world.analyzer2Coords[1] = -GRID_Y_SIDE/2;
+        challInfo.world.analyzer2Coords[2] = 0;
+
 
     } else {
         challInfo.world.peakConcentration[0] = -1*concentrationX - 1;
         challInfo.world.peakConcentration[1] = -1*concentrationY - 1;
         // Analyzer is on pos [x, y, z] = 15, 3, 0
-        challInfo.world.analyzerCoords[0] = -CELL_SIZE/2;
-        challInfo.world.analyzerCoords[1] = -GRID_Y_SIDE/2;
-        challInfo.world.analyzerCoords[2] = 0;
+        challInfo.world.analyzer1Coords[0] = -CELL_SIZE/2;
+        challInfo.world.analyzer1Coords[1] = -GRID_Y_SIDE/2;
+        challInfo.world.analyzer1Coords[2] = 0;
+        challInfo.world.analyzer2Coords[0] = CELL_SIZE/2;
+        challInfo.world.analyzer2Coords[1] = GRID_Y_SIDE/2;
+        challInfo.world.analyzer2Coords[2] = 0;
+
     }
     GAME_TRACE(("[%d]|peakConcentration:%d,%d|", challInfo.currentTime, challInfo.world.peakConcentration[0], challInfo.world.peakConcentration[1]));
-    GAME_TRACE(("[%d]|analyzerCoords:%d,%d,%d|", 
-                challInfo.currentTime, challInfo.world.analyzerCoords[0], challInfo.world.analyzerCoords[1], challInfo.world.analyzerCoords[2]));
+    GAME_TRACE(("[%d]|analyzer1Coords:%d,%d,%d|", 
+                challInfo.currentTime, challInfo.world.analyzer1Coords[0], challInfo.world.analyzer1Coords[1], challInfo.world.analyzer1Coords[2]));
     // Available concentrations
     int concentrations[] = {HIGH_CONCENTRATION, MED_CONCENTRATION, LOW_CONCENTRATION, MIN_CONCENTRATION};
     // Initialize grid, only traverse one side
@@ -72,7 +80,8 @@ void ZeroRoboticsGameImpl::initializeWorld(int concentrationX, int concentration
     #endif
 
     #ifdef ZR3D
-        challInfo.world.analyzerCoords[2] = 0.36; // Analyzer is in the middle of the 4th square above ground
+        challInfo.world.analyzer1Coords[2] = 0.36; // Analyzer is in the middle of the 4th square above ground
+        challInfo.world.analyzer2Coords[2] = 0.36;
     #endif
 }
 
