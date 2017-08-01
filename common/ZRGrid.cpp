@@ -88,13 +88,11 @@ void ZeroRoboticsGameImpl::initializeWorld(int concentrationX, int concentration
 
 void ZeroRoboticsGameImpl::initializeTerrainHeight(){
     srand (time(NULL));    
-    #ifdef ZR3D
-        for(int i = 0;i<Y_SIZE;i++){
-            for(int j = 0;j<XZ_SIZE;j++){
-                    challInfo.world.grid[i][j].height = rand()%4+1;
-            }
+    for(int i = 0;i<Y_SIZE;i++){
+        for(int j = 0;j<XZ_SIZE;j++){
+                challInfo.world.grid[i][j].height = rand()%4+1;
         }
-    #endif
+    }
 }
 
 

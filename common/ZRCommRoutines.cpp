@@ -36,7 +36,9 @@ extern "C" {
 void ZeroRoboticsGameImpl::processRXData(default_rfm_packet packet){
 	int man_num = ctrlManeuverNumGet();
 	
-	
+		// maneuver 3 = game mode
+	// maneuver 202 = end game (get final score)
+	// maneuver 204 = terminate
 	switch (packet[PKT_CM])
 	{
 		case COMM_CMD_DBG_SHORT_SIGNED:
