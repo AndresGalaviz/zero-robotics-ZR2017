@@ -107,7 +107,7 @@ void ZeroRoboticsGameImpl::turnOffOldGeysers()
                 challInfo.world.geyserLocations[i][0] = -1;
                 challInfo.world.geyserLocations[i][1] = -1;
                 // Game trace: X,Y,0 -> Location for turning off geyser
-                GAME_TRACE(("[%d]geyserLocations:%d,%d,0|", challInfo.currentTime, geyserLocations[i][0], geyserLocations[i][1]));
+                GAME_TRACE(("[%d]geyserLocations:%d,%d,0|", challInfo.currentTime, challInfo.world.geyserLocations[i][0], challInfo.world.geyserLocations[i][1]));
             }
         }
     }

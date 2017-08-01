@@ -8,14 +8,6 @@
 
 /*****************HIDDEN FUNCTIONS*****************/
 // ex. void ZeroRoboticsGameImpl::initZones() -> Impl instead
-void ZeroRoboticsGameImpl::obtainAnalyzer(){
-	float analyzer1Pos[3];
-	float analyzer2Pos[3];
-	getAnalyzerPos(analyzer1Pos,1);
-	getAnalyzerPos(analyzer2Pos,2);
-
-	if(pimpl.challInfo.me.zrState[0])
-}
 
 
 /***********USER FUNCTIONS*************/

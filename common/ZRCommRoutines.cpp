@@ -387,7 +387,7 @@ void ZeroRoboticsGameImpl::sendInit()
 	commSendPacket(COMM_CHANNEL_STL, BROADCAST, 0, COMM_CMD_DBG_SHORT_SIGNED, (unsigned char *) DebugVecShort,0);
 
 	for(int i = 0;i<2;i++){	
-		modify_init(DebugVecShort,i);
+		modifyInit(DebugVecShort,i);
 		commSendPacket(COMM_CHANNEL_STL, BROADCAST, 0, COMM_CMD_DBG_SHORT_SIGNED, (unsigned char *) DebugVecShort,0);
 	}
 
@@ -418,7 +418,7 @@ void ZeroRoboticsGameImpl::sendInit()
 	#endif
 }
 
-void ZeroRoboticsGameImpl::modify_init(short (&init_arr)[16],int i){
+void ZeroRoboticsGameImpl::modifyInit(short (&init_arr)[16],int i){
 	//init[2] = (short)((char)height1<<8)+((char)height2)
 	init_arr[0]=0; //time stamp of zero
 	init_arr[1]=i;//what column we're sending data about 

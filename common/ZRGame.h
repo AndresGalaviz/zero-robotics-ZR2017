@@ -196,6 +196,7 @@ class ZeroRoboticsGame {
    * \return AnalyzerID if the SPHERES has the Sample Analyzer Item 0 otherwise
    */
   int hasAnalyzer();
+  void obtainAnalyzer(int analyzerID);
 
 private:
   // REQUIRED: reference to the game implementation, do not delete!

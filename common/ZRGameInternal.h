@@ -139,6 +139,7 @@ public:
 	* Send Grid initialized information
 	*/
 	void sendInit(void);
+	void modifyInit(short (&init_arr)[16],int i); //Adjust Init array
 
 	/**
 	* (Required) Called on every gspControl control cycle, It should be used to send debug
