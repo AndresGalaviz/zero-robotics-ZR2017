@@ -8,7 +8,7 @@
 /*****************HIDDEN FUNCTIONS*****************/
 
 /***********USER FUNCTIONS*************/
-// TODO: What happens when you run into de ground? 
+// TODO: What happens when you run into the ground? 
 // TODO: Tank has to be pointing down, position +4cm from surface, speed < 1cm/s. Penalyzed if conditions not met
 bool ZeroRoboticsGame::startDrill() {
     // QUESTION: For 2D you cannot move with drill on?
