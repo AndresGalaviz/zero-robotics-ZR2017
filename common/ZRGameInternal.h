@@ -29,7 +29,7 @@ public:
 		int 			concentration; // Bacteria concentration 
 		int 			numDrills; 	   // Number of times this cell has been drilled
 		#ifdef ZR3D
-		int				height;
+		int				height; //defined to range from 1-4 (randomized)
 		#endif
 		Cell() { concentration = 0; numDrills = 0;};
 	};
@@ -139,7 +139,7 @@ public:
 	* Send Grid initialized information
 	*/
 	void sendInit(void);
-	void modifyInit(short (&init_arr)[16],int i); //Adjust Init array
+	void fillInGridData(short (&init_arr)[16],int i); //Adjust Init array
 
 	/**
 	* (Required) Called on every gspControl control cycle, It should be used to send debug

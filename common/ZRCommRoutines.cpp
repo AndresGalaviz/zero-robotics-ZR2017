@@ -388,8 +388,8 @@ void ZeroRoboticsGameImpl::sendInit()
 	DebugVecShort[1] = (short) challInfo.world.peakConcentration[1];
 	commSendPacket(COMM_CHANNEL_STL, BROADCAST, 0, COMM_CMD_DBG_SHORT_SIGNED, (unsigned char *) DebugVecShort,0);
 
-	for(int i = 0;i<2;i++){	
-		modifyInit(DebugVecShort,i);
+	for(int i = 0;i<20;i++){	
+		fillInGridData(DebugVecShort,i);
 		commSendPacket(COMM_CHANNEL_STL, BROADCAST, 0, COMM_CMD_DBG_SHORT_SIGNED, (unsigned char *) DebugVecShort,0);
 	}
 
@@ -420,13 +420,12 @@ void ZeroRoboticsGameImpl::sendInit()
 	#endif
 }
 
-void ZeroRoboticsGameImpl::modifyInit(short (&init_arr)[16],int i){
-	//init[2] = (short)((char)height1<<8)+((char)height2)
+void ZeroRoboticsGameImpl::fillInGridData(short (&init_arr)[16],int i){
 	init_arr[0]=0; //time stamp of zero
 	init_arr[1]=i;//what column we're sending data about 
 	int counter = 2; //used for iterating through init_arr 
     for(int j = 0;j<XZ_SIZE;j+=2){
     	init_arr[counter]=(short)((char)challInfo.world.grid[i][j].height <<8)+((char)challInfo.world.grid[i][j+1].height ); //storing two different bytes of data in a single short 
     	counter++;
-    } //Potentially send init array here?
+    } 
 }
