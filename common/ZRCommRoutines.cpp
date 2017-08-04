@@ -253,8 +253,7 @@ void ZeroRoboticsGameImpl::sendDebug() {
 
 
   //fflush(stdout);
-  if (ctrlManeuverNumGet() < 3)
-  {
+  if (ctrlManeuverNumGet() < 3){
   sendInit();
   }
   #endif
@@ -370,8 +369,7 @@ void ZeroRoboticsGameImpl::sendDebug() {
 
 // }
 
-void ZeroRoboticsGameImpl::sendInit()
-{
+void ZeroRoboticsGameImpl::sendInit(){
 	#ifndef ISS_FINALS
   	#if (SPHERE_ID == SPHERE1)
     dbg_short_packet DebugVecShort;
@@ -384,8 +382,21 @@ void ZeroRoboticsGameImpl::sendInit()
 	memset(DebugVecUShort,  0, sizeof(dbg_ushort_packet));
 	memset(DebugVecFloat,  0, sizeof(dbg_float_packet));
 
-	DebugVecShort[0] = (short) challInfo.world.peakConcentration[0];
-	DebugVecShort[1] = (short) challInfo.world.peakConcentration[1];
+	DebugVecShort[0] = 0;
+	DebugVecShort[1] = 99;
+	DebugVecShort[2] = (short) challInfo.world.peakConcentration[0];
+	DebugVecShort[3] = (short) challInfo.world.peakConcentration[1];
+
+	#ifdef ALLIANCE
+	DebugVecShort[4] = (unsigned short) 3;
+	#elif defined ZR3D
+	DebugVecShort[4] = (unsigned short) 2;
+	#elif defined ZR2D
+	DebugVecShort[4] = (unsigned short) 1;
+	#else
+	DebugVecShort[4] = (unsigned short) 0;
+	#endif
+
 	commSendPacket(COMM_CHANNEL_STL, BROADCAST, 0, COMM_CMD_DBG_SHORT_SIGNED, (unsigned char *) DebugVecShort,0);
 
 	for(int i = 0;i<20;i++){	
@@ -395,15 +406,6 @@ void ZeroRoboticsGameImpl::sendInit()
 
 	DebugVecUShort[0] = (unsigned short) 0;
 
-	#ifdef ALLIANCE
-	DebugVecUShort[2] = (unsigned short) 3;
-	#elif defined ZR3D
-	DebugVecUShort[2] = (unsigned short) 2;
-	#elif defined ZR2D
-	DebugVecUShort[2] = (unsigned short) 1;
-	#else
-	DebugVecUShort[2] = (unsigned short) 0;
-	#endif
 
 
 	commSendPacket(COMM_CHANNEL_STL, BROADCAST, 0, COMM_CMD_DBG_SHORT_UNSIGNED, (unsigned char *) DebugVecUShort,0);
