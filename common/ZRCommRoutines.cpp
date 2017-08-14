@@ -255,11 +255,12 @@ void ZeroRoboticsGameImpl::sendDebug() {
   //fflush(stdout);
   if (ctrlManeuverNumGet() < 3){
   sendInit();
+  return;
   }
   #endif
   
-//   if (ctrlManeuverNumGet() > 1)
-//   {
+  if (ctrlManeuverNumGet() > 1)
+  {
   
 //   // normal game packages
   tstep = apiImpl.api->getTime();
