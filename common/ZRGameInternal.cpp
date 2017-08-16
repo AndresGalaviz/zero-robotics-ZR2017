@@ -450,7 +450,8 @@ void ZeroRoboticsGameImpl::subtractScore() {
     // TODO: Other things that might make the user lose points
     if(challInfo.me.incorrectDrill) {
         challInfo.me.score -= 1;
-    }
+	}
+	//TODO: if sphere is out-of-bounds?
 }
 
 float ZeroRoboticsGame::getScore()
