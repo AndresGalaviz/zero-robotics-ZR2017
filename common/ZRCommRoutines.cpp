@@ -253,14 +253,14 @@ void ZeroRoboticsGameImpl::sendDebug() {
 
 
   //fflush(stdout);
-  if (ctrlManeuverNumGet() < 3){
+  if (ctrlManeuverNumGet() < 3)
+  {
   sendInit();
-  return;
   }
   #endif
   
-  if (ctrlManeuverNumGet() > 1)
-  {
+//   if (ctrlManeuverNumGet() > 1)
+//   {
   
 //   // normal game packages
   tstep = apiImpl.api->getTime();
@@ -277,7 +277,7 @@ void ZeroRoboticsGameImpl::sendDebug() {
 
 //   for (int i = 0; i < stop; i++) {
 //     for(int j = 1; j <= 3; j++) {
-//       DebugVecShort[3*i+j] = (short)(10000 * challInfo.item[i+offset].zrState[j-1]); //Fills in our dS array with the position of the 4 items for pos 1-12
+; //Fills in our dS array with the position of the 4 items for pos 1-12//       DebugVecShort[3*i+j] = (short)(10000 * challInfo.item[i+offset].zrState[j-1])
 //     }
 //   }
 //
@@ -287,12 +287,12 @@ void ZeroRoboticsGameImpl::sendDebug() {
 
 //   // unsigned short debug packet: status of game variables
   DebugVecUShort[0] = (unsigned short)(tstep*10); //Timestamp
-  DebugVecUShort[8] = (unsigned short ) (challInfo.me.hasAnalyzer+challInfo.other.hasAnalyzer);
 
 
 
-  DebugVecUShort[10] = (unsigned short) challInfo.me.message;
-
+//   DebugVecUShort[8] = (unsigned short) challInfo.me.zone.numSPSheld;
+//   DebugVecUShort[10] = (unsigned short) challInfo.me.message;
+//   DebugVecUShort[11] = (unsigned short) challInfo.me.hasReceiver;
 
 //   //Float debug packet: score, fuel, forces
   DebugVecFloat[0] = (float)tstep;
@@ -370,7 +370,8 @@ void ZeroRoboticsGameImpl::sendDebug() {
 
 // }
 
-void ZeroRoboticsGameImpl::sendInit(){
+void ZeroRoboticsGameImpl::sendInit()
+{
 	#ifndef ISS_FINALS
   	#if (SPHERE_ID == SPHERE1)
     dbg_short_packet DebugVecShort;
@@ -383,30 +384,26 @@ void ZeroRoboticsGameImpl::sendInit(){
 	memset(DebugVecUShort,  0, sizeof(dbg_ushort_packet));
 	memset(DebugVecFloat,  0, sizeof(dbg_float_packet));
 
-	DebugVecShort[0] = 0;
-	DebugVecShort[1] = 99;
-	DebugVecShort[2] = (short) challInfo.world.peakConcentration[0];
-	DebugVecShort[3] = (short) challInfo.world.peakConcentration[1];
-
-	#ifdef ALLIANCE
-	DebugVecShort[4] = (unsigned short) 3;
-	#elif defined ZR3D
-	DebugVecShort[4] = (unsigned short) 2;
-	#elif defined ZR2D
-	DebugVecShort[4] = (unsigned short) 1;
-	#else
-	DebugVecShort[4] = (unsigned short) 0;
-	#endif
-
+	DebugVecShort[0] = (short) challInfo.world.peakConcentration[0];
+	DebugVecShort[1] = (short) challInfo.world.peakConcentration[1];
 	commSendPacket(COMM_CHANNEL_STL, BROADCAST, 0, COMM_CMD_DBG_SHORT_SIGNED, (unsigned char *) DebugVecShort,0);
 
-	for(int i = 0;i<20;i++){	
-		fillInGridData(DebugVecShort,i);
+	for(int i = 0;i<2;i++){	
+		modify_init(DebugVecShort,i);
 		commSendPacket(COMM_CHANNEL_STL, BROADCAST, 0, COMM_CMD_DBG_SHORT_SIGNED, (unsigned char *) DebugVecShort,0);
 	}
 
 	DebugVecUShort[0] = (unsigned short) 0;
 
+	#ifdef ALLIANCE
+	DebugVecUShort[2] = (unsigned short) 3;
+	#elif defined ZR3D
+	DebugVecUShort[2] = (unsigned short) 2;
+	#elif defined ZR2D
+	DebugVecUShort[2] = (unsigned short) 1;
+	#else
+	DebugVecUShort[2] = (unsigned short) 0;
+	#endif
 
 
 	commSendPacket(COMM_CHANNEL_STL, BROADCAST, 0, COMM_CMD_DBG_SHORT_UNSIGNED, (unsigned char *) DebugVecUShort,0);
@@ -423,12 +420,13 @@ void ZeroRoboticsGameImpl::sendInit(){
 	#endif
 }
 
-void ZeroRoboticsGameImpl::fillInGridData(short (&init_arr)[16],int i){
+void ZeroRoboticsGameImpl::modify_init(short (&init_arr)[16],int i){
+	//init[2] = (short)((char)height1<<8)+((char)height2)
 	init_arr[0]=0; //time stamp of zero
 	init_arr[1]=i;//what column we're sending data about 
 	int counter = 2; //used for iterating through init_arr 
     for(int j = 0;j<XZ_SIZE;j+=2){
     	init_arr[counter]=(short)((char)challInfo.world.grid[i][j].height <<8)+((char)challInfo.world.grid[i][j+1].height ); //storing two different bytes of data in a single short 
     	counter++;
-    } 
+    } //Potentially send init array here?
 }
