@@ -27,8 +27,8 @@ bool ZeroRoboticsGame::startDrill() {
     }
     
     // Geyser appearance probability
-    if(((float) rand() / (RAND_MAX)) < ((float)pimpl.challInfo.world.grid[playerY][playerX].numDrills)/64.0) {
-        for(int i = 0; i < 10; i++) {
+    if(((float) rand() / (RAND_MAX)) < ((float)pimpl.challInfo.world.grid[playerY][playerX].numDrills)/64.0) { //If geyser appears at this location 
+        for(int i = 0; i < 10; i++) { //Why do we iterate over all 10 potential geysers and set their location?
             if (pimpl.challInfo.world.geyserActiveTime[i] == -1) {
                 // No more than 10 geysers should be active at any time
                 pimpl.challInfo.world.geyserActiveTime[i] == 0;

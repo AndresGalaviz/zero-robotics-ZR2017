@@ -29,7 +29,7 @@ public:
 		int 			concentration; // Bacteria concentration 
 		int 			numDrills; 	   // Number of times this cell has been drilled
 		#ifdef ZR3D
-		int				height;
+		int				height; //defined to range from 1-4 (randomized)
 		#endif
 		Cell() { concentration = 0; numDrills = 0;};
 	};
@@ -50,7 +50,8 @@ public:
 	struct World
 	{
 		Cell				grid[Y_SIZE][XZ_SIZE]; // YX arrangement
-		float				analyzerCoords[3];
+		float				analyzer1Coords[3];
+		float 				analyzer2Coords[3];
 		int 				peakConcentration[2];
 		int					numActiveGeysers;
 		float 				geyserLocations[10][2]; // 10 geyser, 2D coordinates
@@ -138,6 +139,7 @@ public:
 	* Send Grid initialized information
 	*/
 	void sendInit(void);
+	void fillInGridData(short (&init_arr)[16],int i); //Adjust Init array
 
 	/**
 	* (Required) Called on every gspControl control cycle, It should be used to send debug
@@ -178,6 +180,9 @@ public:
 	 * \param concentrationY Location in the Y axis of the peak concentration(This is mirrored depending on SPHEREID)
 	 */
 	void initializeWorld(int concentrationX = -1, int concentrationY = -1);
+	#ifdef ZR3D
+	void initializeTerrainHeight();
+	#endif
 	
 	void subtractScore();
 	/**
