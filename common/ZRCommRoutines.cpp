@@ -257,6 +257,7 @@ void ZeroRoboticsGameImpl::sendDebug() {
 
 
   //fflush(stdout);
+<<<<<<< HEAD
   if (ctrlManeuverNumGet() < 3){
 	  sendInit();
 	  return;
@@ -264,6 +265,16 @@ void ZeroRoboticsGameImpl::sendDebug() {
   #endif
   
   if (ctrlManeuverNumGet() > 2){
+=======
+  if (ctrlManeuverNumGet() < 3)
+  {
+  sendInit();
+  }
+  #endif
+  
+//   if (ctrlManeuverNumGet() > 1)
+//   {
+>>>>>>> 99a06ecd0abd092928f18ed050ce71e60244d372
   
 	//   // normal game packages
 	  tstep = apiImpl.api->getTime();
@@ -278,16 +289,26 @@ void ZeroRoboticsGameImpl::sendDebug() {
 	//   // debug short: item locations
 	  DebugVecShort[0]  = (short)(tstep*10); //Timestamp
 
+<<<<<<< HEAD
 	//   for (int i = 0; i < stop; i++) {
 	//     for(int j = 1; j <= 3; j++) {
 	//       DebugVecShort[3*i+j] = (short)(10000 * challInfo.item[i+offset].zrState[j-1]); //Fills in our dS array with the position of the 4 items for pos 1-12
 	//     }
 	//   }
 	//
+=======
+//   for (int i = 0; i < stop; i++) {
+//     for(int j = 1; j <= 3; j++) {
+; //Fills in our dS array with the position of the 4 items for pos 1-12//       DebugVecShort[3*i+j] = (short)(10000 * challInfo.item[i+offset].zrState[j-1])
+//     }
+//   }
+//
+>>>>>>> 99a06ecd0abd092928f18ed050ce71e60244d372
 
 
 
 
+<<<<<<< HEAD
 	//   // unsigned short debug packet: status of game variables
 	  DebugVecUShort[0] = (unsigned short)(tstep*10); //Timestamp
 	  DebugVecUShort[7] = (unsigned short ) (challInfo.me.hasAnalyzer+challInfo.other.hasAnalyzer); //For determining visualization of analyzer 
@@ -298,6 +319,16 @@ void ZeroRoboticsGameImpl::sendDebug() {
 
 	  DebugVecUShort[10] = (unsigned short) challInfo.me.message;
 
+=======
+//   // unsigned short debug packet: status of game variables
+  DebugVecUShort[0] = (unsigned short)(tstep*10); //Timestamp
+
+
+
+//   DebugVecUShort[8] = (unsigned short) challInfo.me.zone.numSPSheld;
+//   DebugVecUShort[10] = (unsigned short) challInfo.me.message;
+//   DebugVecUShort[11] = (unsigned short) challInfo.me.hasReceiver;
+>>>>>>> 99a06ecd0abd092928f18ed050ce71e60244d372
 
 	//   //Float debug packet: score, fuel, forces
 	  DebugVecFloat[0] = (float)tstep;
@@ -375,7 +406,8 @@ void ZeroRoboticsGameImpl::sendDebug() {
 
 }
 
-void ZeroRoboticsGameImpl::sendInit(){
+void ZeroRoboticsGameImpl::sendInit()
+{
 	#ifndef ISS_FINALS
 	  	#if (SPHERE_ID == SPHERE1)
 	    	dbg_short_packet DebugVecShort;
@@ -416,5 +448,5 @@ void ZeroRoboticsGameImpl::modifyInit(short (&init_arr)[16],int i){
     for(int j = 0;j<Y_SIZE;j+=2){
     	init_arr[counter]=(short)((char)challInfo.world.grid[j][i].height <<8)+((char)challInfo.world.grid[j+1][i].height ); //storing two different bytes of data in a single short 
     	counter++;
-    } 
+    } //Potentially send init array here?
 }
