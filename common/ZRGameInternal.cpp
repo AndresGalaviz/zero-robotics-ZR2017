@@ -109,11 +109,11 @@ void ZeroRoboticsGameImpl::init()
 	
 	
 	#if SPHERE_ID==SPHERE1
-	// initialize world scenario
-	initializeWorld();
-	#ifdef ZR3D
-	initializeTerrainHeight();
-	#endif
+		// initialize world scenario
+		initializeWorld();
+		#ifdef ZR3D
+			initializeTerrainHeight();
+		#endif
 	#endif
 
 	// send information to ground and sat2 at the end of init
@@ -450,8 +450,7 @@ void ZeroRoboticsGameImpl::subtractScore() {
     // TODO: Other things that might make the user lose points
     if(challInfo.me.incorrectDrill) {
         challInfo.me.score -= 1;
-	}
-	//TODO: if sphere is out-of-bounds?
+    }
 }
 
 float ZeroRoboticsGame::getScore()
