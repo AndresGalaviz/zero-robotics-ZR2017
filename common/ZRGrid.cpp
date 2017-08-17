@@ -80,8 +80,8 @@ void ZeroRoboticsGameImpl::initializeWorld(int concentrationX, int concentration
     #endif
 
     #ifdef ZR3D
-        challInfo.world.analyzer1Coords[2] = 0.36; // Analyzer is in the middle of the 4th square above ground
-        challInfo.world.analyzer2Coords[2] = 0.36;
+        challInfo.world.analyzer1Coords[2] = -0.36; // Analyzer is in the middle of the 4th square above ground
+        challInfo.world.analyzer2Coords[2] = -0.36;
     #endif
 }
 
