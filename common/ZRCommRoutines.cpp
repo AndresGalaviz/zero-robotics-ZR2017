@@ -35,8 +35,7 @@ extern "C" {
 
 void ZeroRoboticsGameImpl::processRXData(default_rfm_packet packet){
 	int man_num = ctrlManeuverNumGet();
-	
-	
+
 	switch (packet[PKT_CM]){
 		case COMM_CMD_DBG_SHORT_SIGNED:
 			if(man_num<3){ //intializing world for sphere 2
@@ -47,8 +46,13 @@ void ZeroRoboticsGameImpl::processRXData(default_rfm_packet packet){
 					initializeWorld(DebugVecShort[0], DebugVecShort[1]);
 				}
 				else{
-					//Need to create terrain for Sphere 2
-					short col = DebugVecShort[1];
+					#ifdef ZR3D 					
+						short row = DebugVecShort[1]; //ranges from 0 to XZ_SIZE (16)
+						for(int j = 2;j<Y_SIZE;j+=2){
+							challInfo.world.grid[j][row].height =  (DebugVecShort[j]>>8)& 0xFF;
+							challInfo.world.grid[j+1][row].height = DebugVecShort[j]& 0xFF;
+						}
+					#endif
 				}
 			}
 			else{
@@ -257,7 +261,6 @@ void ZeroRoboticsGameImpl::sendDebug() {
 
 
   //fflush(stdout);
-<<<<<<< HEAD
   if (ctrlManeuverNumGet() < 3){
 	  sendInit();
 	  return;
@@ -265,16 +268,6 @@ void ZeroRoboticsGameImpl::sendDebug() {
   #endif
   
   if (ctrlManeuverNumGet() > 2){
-=======
-  if (ctrlManeuverNumGet() < 3)
-  {
-  sendInit();
-  }
-  #endif
-  
-//   if (ctrlManeuverNumGet() > 1)
-//   {
->>>>>>> 99a06ecd0abd092928f18ed050ce71e60244d372
   
 	//   // normal game packages
 	  tstep = apiImpl.api->getTime();
@@ -289,26 +282,16 @@ void ZeroRoboticsGameImpl::sendDebug() {
 	//   // debug short: item locations
 	  DebugVecShort[0]  = (short)(tstep*10); //Timestamp
 
-<<<<<<< HEAD
 	//   for (int i = 0; i < stop; i++) {
 	//     for(int j = 1; j <= 3; j++) {
 	//       DebugVecShort[3*i+j] = (short)(10000 * challInfo.item[i+offset].zrState[j-1]); //Fills in our dS array with the position of the 4 items for pos 1-12
 	//     }
 	//   }
 	//
-=======
-//   for (int i = 0; i < stop; i++) {
-//     for(int j = 1; j <= 3; j++) {
-; //Fills in our dS array with the position of the 4 items for pos 1-12//       DebugVecShort[3*i+j] = (short)(10000 * challInfo.item[i+offset].zrState[j-1])
-//     }
-//   }
-//
->>>>>>> 99a06ecd0abd092928f18ed050ce71e60244d372
 
 
 
 
-<<<<<<< HEAD
 	//   // unsigned short debug packet: status of game variables
 	  DebugVecUShort[0] = (unsigned short)(tstep*10); //Timestamp
 	  DebugVecUShort[7] = (unsigned short ) (challInfo.me.hasAnalyzer+challInfo.other.hasAnalyzer); //For determining visualization of analyzer 
@@ -319,16 +302,6 @@ void ZeroRoboticsGameImpl::sendDebug() {
 
 	  DebugVecUShort[10] = (unsigned short) challInfo.me.message;
 
-=======
-//   // unsigned short debug packet: status of game variables
-  DebugVecUShort[0] = (unsigned short)(tstep*10); //Timestamp
-
-
-
-//   DebugVecUShort[8] = (unsigned short) challInfo.me.zone.numSPSheld;
-//   DebugVecUShort[10] = (unsigned short) challInfo.me.message;
-//   DebugVecUShort[11] = (unsigned short) challInfo.me.hasReceiver;
->>>>>>> 99a06ecd0abd092928f18ed050ce71e60244d372
 
 	//   //Float debug packet: score, fuel, forces
 	  DebugVecFloat[0] = (float)tstep;
@@ -406,8 +379,7 @@ void ZeroRoboticsGameImpl::sendDebug() {
 
 }
 
-void ZeroRoboticsGameImpl::sendInit()
-{
+void ZeroRoboticsGameImpl::sendInit(){
 	#ifndef ISS_FINALS
 	  	#if (SPHERE_ID == SPHERE1)
 	    	dbg_short_packet DebugVecShort;
@@ -440,13 +412,13 @@ void ZeroRoboticsGameImpl::sendInit()
 	#endif
 }
 
-void ZeroRoboticsGameImpl::modifyInit(short (&init_arr)[16],int i){
+void ZeroRoboticsGameImpl::modifyInit(short (&init_arr)[16], int i){
 	//init[2] = (short)((char)height1<<8)+((char)height2)
 	init_arr[0]=(200+i)*10;
-	init_arr[1]=i;//what column we're sending data about 
+	init_arr[1]=i;//what row we're sending data about 
 	int counter = 2; //used for iterating through init_arr 
     for(int j = 0;j<Y_SIZE;j+=2){
     	init_arr[counter]=(short)((char)challInfo.world.grid[j][i].height <<8)+((char)challInfo.world.grid[j+1][i].height ); //storing two different bytes of data in a single short 
     	counter++;
-    } //Potentially send init array here?
+    } 
 }
