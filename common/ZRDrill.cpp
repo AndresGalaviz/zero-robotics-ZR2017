@@ -27,28 +27,30 @@ bool ZeroRoboticsGame::startDrill() {
     }
     
     // Geyser appearance probability
-    if(((float) rand() / (RAND_MAX)) < ((float)pimpl.challInfo.world.grid[playerY][playerX].numDrills)/64.0) { //If geyser appears at this location 
-        for(int i = 0; i < 10; i++) { //Why do we iterate over all 10 potential geysers and set their location?
+    float numDrills = pimpl.challInfo.world.grid[playerY][playerX].numDrills;
+    if(((float) rand() / (RAND_MAX)) < ((float)numDrills*numDrills*numDrills)/64.0) {
+        for(int i = 0; i < 10; i++) {
             if (pimpl.challInfo.world.geyserActiveTime[i] == -1) {
                 // No more than 10 geysers should be active at any time
                 pimpl.challInfo.world.geyserActiveTime[i] == 0;
                 pimpl.challInfo.world.geyserLocations[i][0] = playerX;
                 pimpl.challInfo.world.geyserLocations[i][1] = playerY;
                 pimpl.challInfo.me.samples.samplesHeld.reset(); // Drop all samples
-                GAME_TRACE(("[%d]geyserLocations:%d,%d,1|", challInfo.currentTime, geyserLocations[i][0], geyserLocations[i][1]));
+                GAME_TRACE(("[%d]geyserLocations:%d,%d,1|", pimpl.challInfo.currentTime, 
+                            pimpl.challInfo.world.geyserLocations[i][0], pimpl.challInfo.world.geyserLocations[i][1]));
                 // TODO: Add code for "stunning" satellite in 2D and flying it up in 3D
                 return false;
             }
         }
     }
 
-    GAME_TRACE(("[%d]drillEnabled:1|", challInfo.currentTime));
+    GAME_TRACE(("[%d]drillEnabled:1|", pimpl.challInfo.currentTime));
     pimpl.challInfo.me.drillEnabled = true;
     return true;
 }
 
 bool ZeroRoboticsGame::stopDrill() {
-    GAME_TRACE(("[%d]drillEnabled:0|", challInfo.currentTime));
+    GAME_TRACE(("[%d]drillEnabled:0|", pimpl.challInfo.currentTime));
     pimpl.challInfo.me.drillEnabled = false;
     return true;
 }

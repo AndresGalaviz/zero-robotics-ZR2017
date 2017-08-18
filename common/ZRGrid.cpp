@@ -11,20 +11,19 @@
 /*****************HIDDEN FUNCTIONS*****************/
 
 void ZeroRoboticsGameImpl::initializeWorld(int concentrationX, int concentrationY) {
-    if(concentrationX == -1 || concentrationY == -1) {
-        // Random is slightly biased toward low numbers however in this range is not significant
-        //Peak Concentration 1 can be anywhere except keep out 2 grid sizes from the center and one from edges (i.e. x=[3..7] and y = [3..9])
-        challInfo.world.peakConcentration1[0] = rand()%5+3;
-        if(rand()%2==1)
-            challInfo.world.peakConcentration1[0]*=-1;
-        challInfo.world.peakConcentration1[1] = rand()%7+3;
-        if(rand()%2==1)
-            challInfo.world.peakConcentration1[1]*=-1;
-        //Peak Concentration 2 is mirrored from peak concentration 1 
-        challInfo.world.peakConcentration2[0] = -1*challInfo.world.peakConcentration1[0];
-        challInfo.world.peakConcentration2[1] = -1*challInfo.world.peakConcentration1[1];
-        
-    } 
+        if(concentrationX == -1 || concentrationY == -1) {
+                // Random is slightly biased toward low numbers however in this range is not significant
+                //Peak Concentration 1 can be anywhere except keep out 2 grid sizes from the center and one from edges (i.e. x=[3..7] and y = [3..9])
+                challInfo.world.peakConcentration1[0] = rand()%5+3;
+                if(rand()%2==1)
+                    challInfo.world.peakConcentration1[0]*=-1;
+                challInfo.world.peakConcentration1[1] = rand()%7+3;
+                if(rand()%2==1)
+                    challInfo.world.peakConcentration1[1]*=-1;
+                //Peak Concentration 2 is mirrored from peak concentration 1 
+                challInfo.world.peakConcentration2[0] = -1*challInfo.world.peakConcentration1[0];
+                challInfo.world.peakConcentration2[1] = -1*challInfo.world.peakConcentration1[1];
+        }
     else { //For when sphere 1 sends initialization data to sphere 2 
         challInfo.world.peakConcentration1[0] = concentrationX;
         challInfo.world.peakConcentration1[1] = concentrationY;
@@ -49,24 +48,32 @@ void ZeroRoboticsGameImpl::initializeWorld(int concentrationX, int concentration
     // Initialize grid, only traverse one side
     for(int i = -GRID_Y_SIDE; i < GRID_Y_SIDE; i++) {
 		for(int j = -GRID_X_SIDE; j < GRID_X_SIDE; j++) {
+            //World.peakConcentration needs to be [...-2,-1,1,2...] (no zero),while access to the grid is [...,-2,-1,0,1,2,...]
             int difX1 = (challInfo.world.peakConcentration1[0] - j);
             int difY1 = (challInfo.world.peakConcentration1[1] - i);
+            if(challInfo.world.peakConcentration1[0]>0) difX1--;
+            if(challInfo.world.peakConcentration1[1]>0) difY1--; //to deal with the edge case of row/column 0
 
             int difX2 = (challInfo.world.peakConcentration2[0] - j);
             int difY2 = (challInfo.world.peakConcentration2[1] - i);
+            if(challInfo.world.peakConcentration2[0]>0) difX2--;
+            if(challInfo.world.peakConcentration2[1]>0) difY2--; //same as above
 
-            int difX = std::abs(difX1)>std::abs(difX2) ? std::abs(difX2):std::abs(difX1);
-            int difY = std::abs(difY1)>std::abs(difY2) ? std::abs(difY2): std::abs(difY1);
+            int dist1 = round(sqrt(difX1*difX1+difY1*difY1));
+            int dist2 = round(sqrt(difX2*difX2+difY2*difY2));
 
         // Takes into consideration the longest distance and assigns concentration accordingly 
-            if(difX > difY) 
-                challInfo.world.grid[i + GRID_Y_SIDE][j + GRID_X_SIDE].concentration = difX > 3 ? concentrations[3] : concentrations[difX];
+            if(dist1<dist2) 
+                challInfo.world.grid[i + GRID_Y_SIDE][j + GRID_X_SIDE].concentration = dist1 > 3 ? MIN_CONCENTRATION : concentrations[dist1];
             else 
-                challInfo.world.grid[i + GRID_Y_SIDE][j + GRID_X_SIDE].concentration = difY > 3 ? concentrations[3] : concentrations[difY];
+                challInfo.world.grid[i + GRID_Y_SIDE][j + GRID_X_SIDE].concentration = dist2 > 3 ? MIN_CONCENTRATION : concentrations[dist2];
         }
 	}
     
     #ifdef SHOW_GAME_TRACE
+    printf("peak concentration 1 %d %d \n",challInfo.world.peakConcentration1[0],challInfo.world.peakConcentration1[1]);
+    printf("peak concentration 2 %d %d \n",challInfo.world.peakConcentration2[0],challInfo.world.peakConcentration2[1]);
+
         for(int i = -GRID_Y_SIDE; i < GRID_Y_SIDE; i++) {
             for(int j = -GRID_X_SIDE; j < GRID_X_SIDE; j++) 
                 printf("%*d ", 3, challInfo.world.grid[i + GRID_Y_SIDE][j + GRID_X_SIDE].concentration);
@@ -74,10 +81,8 @@ void ZeroRoboticsGameImpl::initializeWorld(int concentrationX, int concentration
         }
     #endif
 
-    
     GAME_TRACE(("peakConcentration1:%d,%d", challInfo.world.peakConcentration1[0], challInfo.world.peakConcentration1[1]));
     GAME_TRACE(("peakConcentration2: %d ,%d",challInfo.world.peakConcentration2[0],challInfo.world.peakConcentration2[1]));
-    GAME_TRACE(("analyzer1Coords:%f,%f,%f", challInfo.world.analyzer1Coords[0], challInfo.world.analyzer1Coords[1], challInfo.world.analyzer1Coords[2])); 
     for(int i = 0;i<Y_SIZE;i++){
         GAME_TRACE(("grid row: %d col: %x%x%x%x%x%x%x%x%x%x%x%x%x%x%x%x" , i, challInfo.world.grid[i][0].concentration,challInfo.world.grid[i][1].concentration,
 challInfo.world.grid[i][2].concentration,challInfo.world.grid[i][3].concentration,challInfo.world.grid[i][4].concentration,challInfo.world.grid[i][5].concentration,challInfo.world.grid[i][6].concentration,challInfo.world.grid[i][7].concentration,challInfo.world.grid[i][8].concentration,           challInfo.world.grid[i][9].concentration,challInfo.world.grid[i][10].concentration,challInfo.world.grid[i][11].concentration,challInfo.world.grid[i][12].concentration,challInfo.world.grid[i][13].concentration,challInfo.world.grid[i][14].concentration,challInfo.world.grid[i][15].concentration));}
@@ -92,6 +97,13 @@ void ZeroRoboticsGameImpl::initializeTerrainHeight(){
                     challInfo.world.grid[i][j].height = rand()%4+1;
             }
         }
+        printf("\n Sphere 1 grid height: \n");
+        for(int i = -GRID_Y_SIDE; i < GRID_Y_SIDE; i++) {
+            for(int j = -GRID_X_SIDE; j < GRID_X_SIDE; j++) 
+                printf("%*d ", 3, challInfo.world.grid[i + GRID_Y_SIDE][j + GRID_X_SIDE].height);
+            printf("\n");
+        }
+
     #endif
 }
 
@@ -105,7 +117,7 @@ void ZeroRoboticsGameImpl::turnOffOldGeysers()
                 challInfo.world.geyserLocations[i][0] = -1;
                 challInfo.world.geyserLocations[i][1] = -1;
                 // Game trace: X,Y,0 -> Location for turning off geyser
-                GAME_TRACE(("[%d]geyserLocations:%d,%d,0|", challInfo.currentTime, challInfo.world.geyserLocations[i][0], challInfo.world.geyserLocations[i][1]));
+             //   GAME_TRACE(("[%d]geyserLocations:%d,%d,0|", challInfo.currentTime, challInfo.world.geyserLocations[i][0], challInfo.world.geyserLocations[i][1]));
             }
         }
     }

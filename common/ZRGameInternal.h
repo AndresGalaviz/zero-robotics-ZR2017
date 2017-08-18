@@ -29,7 +29,7 @@ public:
 		int 			concentration; // Bacteria concentration 
 		int 			numDrills; 	   // Number of times this cell has been drilled
 		#ifdef ZR3D
-		int				height; //defined to range from 1-4 (randomized)
+		int				height;
 		#endif
 		Cell() { concentration = 0; numDrills = 0;};
 	};
@@ -52,7 +52,8 @@ public:
 		Cell				grid[Y_SIZE][XZ_SIZE]; // YX arrangement
 		float				analyzer1Coords[3];
 		float 				analyzer2Coords[3];
-		int 				peakConcentration[2];
+		int 				peakConcentration1[2];
+		int 				peakConcentration2[2];
 		int					numActiveGeysers;
 		float 				geyserLocations[10][2]; // 10 geyser, 2D coordinates
 		int					geyserActiveTime[10];
@@ -139,8 +140,7 @@ public:
 	* Send Grid initialized information
 	*/
 	void sendInit(void);
-	void fillInGridData(short (&init_arr)[16],int i); //Adjust Init array
-
+	void fillInGridData(short (&init_arr)[16],int i);
 	/**
 	* (Required) Called on every gspControl control cycle, It should be used to send debug
 	* and telemetry information to the ground.

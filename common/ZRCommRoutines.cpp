@@ -43,14 +43,24 @@ void ZeroRoboticsGameImpl::processRXData(default_rfm_packet packet){
 				memcpy(DebugVecShort, &packet[PKT_DATA], sizeof(dbg_short_packet));
 				if(DebugVecShort[1]==99){
 					GAME_TRACE(("Initializing world. | "));
-					initializeWorld(DebugVecShort[0], DebugVecShort[1]);
+					initializeWorld(DebugVecShort[2], DebugVecShort[3]);
 				}
 				else{
 					#ifdef ZR3D 					
-						short row = DebugVecShort[1]; //ranges from 0 to XZ_SIZE (16)
-						for(int j = 2;j<Y_SIZE;j+=2){
-							challInfo.world.grid[j][row].height =  (DebugVecShort[j]>>8)& 0xFF;
-							challInfo.world.grid[j+1][row].height = DebugVecShort[j]& 0xFF;
+						int row = DebugVecShort[1]; //ranges from 0 to XZ_SIZE (16)
+						int col = 0;
+						for(int i = 2;i<12;i++){
+							challInfo.world.grid[col][row].height =  (DebugVecShort[i]>>8)& 0xFF;
+							challInfo.world.grid[col+1][row].height = DebugVecShort[i]& 0xFF;
+							col+=2;
+						}
+						if (row==15){
+							printf("\n Sphere 2 received grid height: \n ");
+							for(int i = -GRID_Y_SIDE; i < GRID_Y_SIDE; i++) {
+					            for(int j = -GRID_X_SIDE; j < GRID_X_SIDE; j++) 
+					                printf("%*d ", 3, challInfo.world.grid[i + GRID_Y_SIDE][j + GRID_X_SIDE].height);
+					            printf("\n");
+					        }
 						}
 					#endif
 				}
@@ -260,11 +270,11 @@ void ZeroRoboticsGameImpl::sendDebug() {
   #ifndef ISS_FINALS
 
 
-  //fflush(stdout);
-  if (ctrlManeuverNumGet() < 3){
-	  sendInit();
-	  return;
-  }
+	  //fflush(stdout);
+	  if (ctrlManeuverNumGet() < 3){
+		  sendInit();
+		  return;
+	  }
   #endif
   
   if (ctrlManeuverNumGet() > 2){
@@ -294,7 +304,7 @@ void ZeroRoboticsGameImpl::sendDebug() {
 
 	//   // unsigned short debug packet: status of game variables
 	  DebugVecUShort[0] = (unsigned short)(tstep*10); //Timestamp
-	  DebugVecUShort[7] = (unsigned short ) (challInfo.me.hasAnalyzer+challInfo.other.hasAnalyzer); //For determining visualization of analyzer 
+	  //DebugVecUShort[7] = (unsigned short ) (challInfo.me.hasAnalyzer+challInfo.other.hasAnalyzer); //For determining visualization of analyzer 
 	 DebugVecUShort[8] = (unsigned short) challInfo.me.hasAnalyzer; //For Game Stats
 	  DebugVecUShort[9] = (unsigned short) challInfo.other.hasAnalyzer; //For Game Stats
 
@@ -405,17 +415,16 @@ void ZeroRoboticsGameImpl::sendInit(){
 			commSendPacket(COMM_CHANNEL_STL, BROADCAST, 0, COMM_CMD_DBG_SHORT_SIGNED, (unsigned char *) DebugVecShort,0);
 
 			for(int i = 0;i<XZ_SIZE;i++){	
-				modifyInit(DebugVecShort,i);
+				fillInGridData(DebugVecShort,i);
 				commSendPacket(COMM_CHANNEL_STL, BROADCAST, 0, COMM_CMD_DBG_SHORT_SIGNED, (unsigned char *) DebugVecShort,0);
 			}
 		#endif
 	#endif
 }
 
-void ZeroRoboticsGameImpl::modifyInit(short (&init_arr)[16], int i){
-	//init[2] = (short)((char)height1<<8)+((char)height2)
+void ZeroRoboticsGameImpl::fillInGridData(short (&init_arr)[16], int i){
 	init_arr[0]=(200+i)*10;
-	init_arr[1]=i;//what row we're sending data about 
+	init_arr[1]=i;//what row we're sending data about from 0 to 15 
 	int counter = 2; //used for iterating through init_arr 
     for(int j = 0;j<Y_SIZE;j+=2){
     	init_arr[counter]=(short)((char)challInfo.world.grid[j][i].height <<8)+((char)challInfo.world.grid[j+1][i].height ); //storing two different bytes of data in a single short 
