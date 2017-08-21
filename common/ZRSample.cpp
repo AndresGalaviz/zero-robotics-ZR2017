@@ -26,7 +26,7 @@ void ZeroRoboticsGame::getConcentrations(float concentrations[MAX_SAMPLE_NUMBER]
     for(int i = 0; i < MAX_SAMPLE_NUMBER; i++) {
         if(pimpl.challInfo.me.samples.samplesAnalyzed[MAX_SAMPLE_NUMBER - i - 1]) {
             concentrations[i] = pimpl.challInfo.me.samples.sampleConcentrations[i];
-        } else if(pimpl.challInfo.me.samples.samplesHeld[MAX_SAMPLE_NUMBER - i - 1]) {
+        } else if (pimpl.challInfo.me.samples.samplesHeld[MAX_SAMPLE_NUMBER - i - 1]) {
             concentrations[i] = -2;
         } else {
             concentrations[i] = -1;
