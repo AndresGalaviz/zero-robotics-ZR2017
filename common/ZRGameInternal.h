@@ -175,6 +175,9 @@ public:
 	void fillInGridHeightData(short (&init_arr)[16], int i);
 	#endif
 	
+	#ifdef ZR2D
+	void fillInConcentrationData(short (&init_arr)[16],int i);
+	#endif
 	/**
 	 * Checks if the satellite is currently at the square indicated by the grid point [0..(X_SIZE-1)],[0..(Y_SIZE-1)] 
 	 */

@@ -86,7 +86,7 @@ void ZeroRoboticsGameImpl::processRXData(default_rfm_packet packet){
 					int geyserX   = (int) ((DebugVecShort[i+1] >> 4) & 0xF);
 					int geyserY   = (int) ((DebugVecShort[i+1])      & 0xF);
 					// activate geysers that are not too old (should be off by now anyway)
-					if ((startTime != 0) && ((startTime + GEYSER_ACTIVE_TIME/2) > apiImpl.api->getTime()))
+					if ((startTime != 0) && ((startTime + GEYSER_ACTIVE_TIME/2) > apiImpl.api->getTime())) //ignore second part of if-statment for visualization 
 						activateGeyser(geyserX, geyserY, startTime);
 				}
 				// last drill time, to update numDrills if needed
@@ -149,6 +149,7 @@ void ZeroRoboticsGameImpl::sendDebug()
 
 	// unsigned short debug packet: status of game variables
 	DebugVecUShort[0] = (unsigned short)(tstep*10); //Timestamp
+	DebugVecUShort[6] = (unsigned short) game->getNumSamplesHeld();
 	DebugVecUShort[7] = (unsigned short) challInfo.me.total_samples;
 	DebugVecUShort[8] = (unsigned short) challInfo.me.hasAnalyzer[0];
 	DebugVecUShort[9] = (unsigned short) challInfo.me.hasAnalyzer[1];
@@ -203,7 +204,12 @@ void ZeroRoboticsGameImpl::sendInit()
 				commSendPacket(COMM_CHANNEL_STL, BROADCAST, 0, COMM_CMD_DBG_SHORT_SIGNED, (unsigned char *) DebugVecShort,0);
 			}
 		#endif
-
+		#ifdef ZR2D
+			for(int i = 0;i<X_SIZE;i++){	
+				fillInConcentrationData(DebugVecShort,i);
+				commSendPacket(COMM_CHANNEL_STL, BROADCAST, 0, COMM_CMD_DBG_SHORT_SIGNED, (unsigned char *) DebugVecShort,0);
+			}
+		#endif
 		#ifdef SHOW_DEBUG
 			GAME_TRACE(("World initialization sent to Sat 2."));
 		#endif
@@ -219,6 +225,17 @@ void ZeroRoboticsGameImpl::fillInGridHeightData(short (&init_arr)[16], int i)
 		int counter = 2; //used for iterating through init_arr 
 		for(int j = 0;j<Y_SIZE;j+=2){
 			init_arr[counter]=(short)((char)challInfo.world.grid[i][j].height <<8)+((char)challInfo.world.grid[i][j+1].height ); //storing two different bytes of data in a single short 
+			counter++;
+		}
+}
+#endif
+#ifdef ZR2D
+void ZeroRoboticsGameImpl::fillInConcentrationData(short (&init_arr)[16],int i){
+	init_arr[0]=(200+i)*10;
+		init_arr[1]=i;//what row we're sending data about from 0 to 15 
+		int counter = 2; //used for iterating through init_arr 
+		for(int j = 0;j<Y_SIZE;j+=2){
+			init_arr[counter]=(short)((char)challInfo.world.grid[i][j].concentration <<8)+((char)challInfo.world.grid[i][j+1].concentration ); //storing two different bytes of data in a single short 
 			counter++;
 		}
 }
