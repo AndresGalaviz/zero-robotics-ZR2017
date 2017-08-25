@@ -5,7 +5,6 @@
 #include "Constants.h"
 #include "ZeroRoboticsGameBaseImpl.hpp"
 #include "comm.h"
-#include <bitset>         // std::bitset
 
 ///Forward declaration of ZR Game
 class ZeroRoboticsGame;
@@ -26,77 +25,68 @@ public:
 	*/
 	struct Cell
 	{
-		int 			concentration; // Bacteria concentration 
-		int 			numDrills; 	   // Number of times this cell has been drilled
-		#ifdef ZR3D
-		int				height;
+		unsigned int 			concentration; 	// Bacteria concentration 
+		unsigned int 			numDrills; 	   	// Number of times this cell has been drilled
+		#ifndef ZR2D
+		unsigned int			height;					// height of the cell for 3D games
 		#endif
-		Cell() { concentration = 0; numDrills = 0;};
-	};
-
-	struct Samples
-	{
-		std::bitset<MAX_SAMPLE_NUMBER> 	samplesHeld;
-		std::bitset<MAX_SAMPLE_NUMBER> 	samplesAnalyzed;
-		float			sampleConcentrations[MAX_SAMPLE_NUMBER];
-		Samples() {}
 	};
 
 	struct Base
 	{
-		int rotateTime;
+		unsigned int rotateTime;
 	};
 
 	struct World
 	{
-		Cell				grid[Y_SIZE][XZ_SIZE]; // YX arrangement
-		float				analyzer1Coords[3];
-		float 				analyzer2Coords[3];
-		int 				peakConcentration1[2];
-		int 				peakConcentration2[2];
-		int					numActiveGeysers;
-		float 				geyserLocations[10][2]; // 10 geyser, 2D coordinates
-		int					geyserActiveTime[10];
+		Cell						grid[X_SIZE][Y_SIZE]; 								// grid of the world with indeces [0..(X_SIZE-1)],[0..(Y_SIZE-1)] 
+		int							peakConcentration[2];
+		unsigned int		numActiveGeysers;
+		int							geyserLocations[MAX_NUM_GEYSERS][2]; 	// 10 geyser, 2D coordinates [0..(X_SIZE-1)],[0..(Y_SIZE-1)] of the grid where the geyser is at
+		unsigned int		geyserTime[MAX_NUM_GEYSERS];					// 0 when OFF, otherwise gameTime() when it was turned on
 	};
-
 	
 	struct PlayerInfo
 	{
 		float           zrState[12];
 		state_vector    sphState;
-		float 			fuelUsed;
-		bool 			collisionActive;		// true if collision avoidance is activated
-		float 			userForces[6];			// stores userForces for download
-		float 			score;					// current total score in the game QUESTION: Should this be float?
-		short 			message;				// message to send to other satellite
-		Samples			samples; /// Space where samples are held
-		float 			lastAttTarget[4];
-		float 			lastPosTarget[4];
-		bool			collisionsActive[NUM_SCORE_ITEMS];
-		bool 			sphereCollisionActive;
-		int				hasAnalyzer;		 	// 0 if no Analyzer object held. ItemID if one is held.
-		bool			drillEnabled;
-		bool			incorrectDrill;
-
+		float 					fuelUsed;
+		float 					userForces[6];											// stores userForces for download
+		float 					score;															// current total score in the game
+		short 					message;														// message to send to other satellite
+		int							samples[MAX_SAMPLE_NUMBER][2]; 			// Space where samples are held: [OFF_GRID,OFF_GRID] = no sample; otherse square number [0..(X_SIZE-1)],[0..(Y_SIZE-1)] of sample
+		unsigned int		total_samples;											// total number of samples picked-up
+		bool						hasAnalyzer[NUM_ANALYZERS];					// true if analyzer held
+		unsigned int		analyzerTime[NUM_ANALYZERS];				// time that the satellite has been over the analyzer
+		bool						drillEnabled;
+		bool						drillError;
+		int							drillSquare[2];											// square where drill operation started
+		float						drillInitAtt[3];										// the 2D (X & Y) pointing of the satellite at the start of a drill operation
+		bool						sampleReady;												// turns true when a drill operation is complete and the sample can be picked-up
+		int							lastDrill[2];												// the last completed drill, for communications with other sat to keep numDrill between both sats
+		unsigned int		lastDrillTime;											// in case a player drills in the same square twice in a row
+		float						geyserForce[2];											// the force if its being pushed by a geizer
+		int							geyserSquare[2];										// the square where the geyser hit, so that its not repeated
+		unsigned int		geyserTime;													// the time the geyser force started (it goes on for 5 seconds)
 	};
 
 	struct OtherInfo
 	{
 		float           zrState[12];
 		state_vector    sphState;
-		float 			score;					// latest known score of other player
-		short 			message;				// message from other player
-		int 			hasAnalyzer;		 	// 0 if no analyzer held. ItemID if one is held.
+		float 					score;												// latest known score of other player
+		short 					message;											// message from other player
+		bool 						hasAnalyzer[NUM_ANALYZERS];		// true if analyzer held
+		unsigned int		total_samples;								// total number of samples picked-up
+		int							lastDrill[2];												// the last completed drill, for communications with other sat to keep numDrill between both sats
+		unsigned int		lastDrillTime;											// in case a player drills in the same square twice in a row
 	};
 	
 	struct ChallengeInfo
 	{	
-		int 				currentTime;
-		int 				random;
 		PlayerInfo 			me;
 		OtherInfo 			other;
-		int 				specialTime;				//counter for comm routiines
-		World				world;
+		World						world;
 	};
 
  	ChallengeInfo challInfo;
@@ -123,11 +113,6 @@ public:
 
 	void updateStates();
 
-	void sphereCollision(float* sphereState, float* otherState, float* forceTorqueOut);
-	/**
-	* (Required) Called on every gspControl control cycle.  It should be used to send debug
-	* and telemetry information to the ground.
-	*/
 	bool enforceBoundaries(float forceTorque[6]);
 
 	/**
@@ -139,8 +124,10 @@ public:
 	/**
 	* Send Grid initialized information
 	*/
+	#ifndef ISS_FINALS
 	void sendInit(void);
-	void fillInGridData(short (&init_arr)[16],int i);
+	#endif
+	
 	/**
 	* (Required) Called on every gspControl control cycle, It should be used to send debug
 	* and telemetry information to the ground.
@@ -158,19 +145,9 @@ public:
 	*/
 	static const state_vector initStateZR;
 
-	void  breakTie();
-
 	#ifdef ZR2D
 	void modify2DForceTorque(float forceTorque[6]);
 	#endif
-
-	//Edits forceTorqueOut to resolve the SPHERE's movement
-	void resolveCollision(float zrState[12], float forceTorqueOut[6]);
-	float dist3d(float* pos1, float* pos2) const;
-
-	float 		randomizeStartingLocs(int itemID, int coord);
-	bool		isFacingPos(float position[]);
-	bool    	isFacingOther();
 
 	/****************GRID FUNCTIONS***************************/
 
@@ -184,13 +161,57 @@ public:
 	void initializeTerrainHeight();
 	#endif
 	
-	void subtractScore();
+	/**
+	 * Randomly sets the height of the surface for 3D games.
+	 */
+	#ifndef ZR2D
+	void initializeTerrainHeight();
+	#endif
+
+	/**
+	 * Copies the grid-height into a short array for communications 
+	 */
+	#ifndef ZR2D
+	void fillInGridHeightData(short (&init_arr)[16], int i);
+	#endif
+	
+	/**
+	 * Checks if the satellite is currently at the square indicated by the grid point [0..(X_SIZE-1)],[0..(Y_SIZE-1)] 
+	 */
+	bool checkAtSquare(int gridX, int gridY);
+	
+	/**
+	 * Updates the player score based on drill errors (add other "every second" penalties here)
+	 */
+	void updateScore();
+
 	/**
 	 * Turn off geysers that have been active for a set period of time
+	 * and create forces if a satellite runs into an active geyser
 	 */
-	void turnOffOldGeysers();
+	bool updateGeysers();
 
-	/*********************Zone functions**********************/
+	/**
+	 * Randomly activates a geyser at the given grid poing [0..(X_SIZE-1)],[0..(Y_SIZE-1)] based on numDrills at location
+	 */
+	void checkGeyser(int gridX, int gridY);
+
+	/**
+	 * Turn on a geyser at the corresponding grid point [0..(X_SIZE-1)],[0..(Y_SIZE-1)] with the given start time
+	 * (created so that it can be called by the random geyser creation or by communications)
+	 */
+	void activateGeyser(int gridX, int gridY, unsigned int startTime);
+
+	/**
+	 * Check if an analyzer is being picked-up
+	 */
+	void updateAnalyzer();
+	
+	/**
+	 * Check if a drill operation is complete and a sample is available
+	 * or if a drill error occurs.
+	 */
+	void updateDrill();
 
 	/**
 	* Retrieves singleton instance of the game implementation
@@ -212,11 +233,5 @@ public:
 };
 
 ZeroRoboticsGameImpl *getGameImpl();
-
-void overrideTarget2D(float target[13]);
-
-// void overrideTarget(float target[13]);
-void swingTwistDecomposition(float q[4], float q_sw[4], float q_tw[4], float sw_vec[3]);
-void quatToPositive(float q[4]);
 
 #endif

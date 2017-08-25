@@ -1,6 +1,7 @@
 //ZRHS2017
 #include <string.h>
 #include <math.h>
+#include <time.h>
 
 #include "ZRGame.h"
 #include "ZRGameInternal.h"
@@ -28,25 +29,16 @@ extern "C" {
  /**
   * Use these vectors to choose the satellites state when the user is given control.
   */
-#ifdef ZR2D
-	#if SPHERE_ID==SPHERE1
-	state_vector initStateZR = {0.0f, 0.15f,0.0f, 0.0f,0.0f,0.0f,  0.0000f, 1.0000f,0.0000f,0.0000f, 0.0f,0.0f,0.0f};
-	#else
-	state_vector initStateZR = {0.0f,-0.15f,0.0f, 0.0f,0.0f,0.0f, -1.0000f, 0.0000f,0.0000f,0.0000f, 0.0f,0.0f,0.0f};
-	#endif
+#if SPHERE_ID==SPHERE1
+state_vector initStateZR = { 0.2f, 0.2f,0.0f, 0.0f,0.0f,0.0f,  0.0000f, 1.0000f,0.0000f,0.0000f, 0.0f,0.0f,0.0f};
 #else
-	#if SPHERE_ID==SPHERE1
-	state_vector initStateZR = {0.0f, 0.15f,0.0f, 0.0f,0.0f,0.0f,  0.7071f,-0.7071f,0.0000f, 0.0000f, 0.0f,0.0f,0.0f};
-	#else
-	state_vector initStateZR = {0.0f,-0.15f,0.0f, 0.0f,0.0f,0.0f,  0.0000f, 0.0000f,0.7071f,-0.7071f, 0.0f,0.0f,0.0f};
-	#endif
+state_vector initStateZR = {-0.2f,-0.2f,0.0f, 0.0f,0.0f,0.0f, -1.0000f, 0.0000f,0.0000f,0.0000f, 0.0f,0.0f,0.0f};
 #endif
 
 // variables sent from the simulation configuration
 extern "C" {
-	int zoneX_cm = 0;
-	int zoneY_cm = 0;
-	int zoneZ_cm = 0;
+	int zoneX = 0;
+	int zoneY = 0;
 }
 
 //======= Singleton Instance of Game and Implementation=====//
@@ -89,36 +81,37 @@ void ZeroRoboticsGameImpl::init()
 	*
 	Game Initialization setup.
 	*/
-	//printf("***************************RUNNING INIT***************************");
-	apiImpl.gameTime = GAME_TIME;
-	memset(&challInfo,0,sizeof(ChallengeInfo));
-	// general clear of challInfo to 0 = false = empty
+	memset(&challInfo,0,sizeof(ChallengeInfo));															// general clear of challInfo to 0 = false = empty
+	for (int i=0; i < MAX_SAMPLE_NUMBER; i++)
+	{
+		challInfo.me.samples[i][0] = OFF_GRID;
+		challInfo.me.samples[i][1] = OFF_GRID;
+	}
+	updateStates();																													// update the state data on challInfo
 
-	challInfo.specialTime = 188;
-	// update the state data on challInfo
-	updateStates();
-
-	challInfo.me.fuelUsed = 0.0f;
-	challInfo.me.score = START_SCORE;
-	challInfo.me.hasAnalyzer = 0;
-	challInfo.me.drillEnabled = false;
-	challInfo.me.incorrectDrill = false;
-	challInfo.other.score = START_SCORE;
-	challInfo.other.hasAnalyzer = 0;
-	challInfo.world.numActiveGeysers = 0;
-	
-	
-	#if SPHERE_ID==SPHERE1
-		// initialize world scenario
-		initializeWorld();
-		#ifdef ZR3D
-			initializeTerrainHeight();
+	#ifndef ISS_FINALS
+		#if SPHERE_ID==SPHERE1
+			// allow users to set zone locations in simulation
+			if ( (zoneX > -7) && (zoneX < 7) && ((zoneX < -2) || (zoneX > 2)) &&
+					 (zoneY > -9) && (zoneY < 9) && ((zoneY < -2) || (zoneY > 2)) )
+			{
+				GAME_TRACE(("USER defined BO-Zone @ grid [%d, %d]", zoneX, zoneY));
+				initializeWorld(zoneX, zoneY);
+			}
+			else
+				initializeWorld();								// initialize world with random max zone locations
+			
+			#ifndef ZR2D
+				initializeTerrainHeight();
+			#endif
+			// send information to ground and sat2 at the end of init
+			sendInit();
 		#endif
+	#else
+		// set fixed terrain for both satellites, not just sat 1
+		initializeWorld(zoneX_ISS, zoneY_ISS);
+		initializeTerrainHeight();
 	#endif
-
-	// send information to ground and sat2 at the end of init
-	sendDebug();
-	
 }
 
 void ZeroRoboticsGameImpl::updateStates() {
@@ -127,8 +120,6 @@ void ZeroRoboticsGameImpl::updateStates() {
 
 	apiImpl.api->getMySphState(challInfo.me.sphState);
 	apiImpl.api->getOtherSphState(challInfo.other.sphState);
-
-	challInfo.currentTime = apiImpl.api->getTime();
 }
 
 
@@ -166,12 +157,7 @@ bool ZeroRoboticsGameImpl::update(float forceTorqueOut[6]) {
 	//Store user forces for sending to ground
 	memcpy(challInfo.me.userForces, forceTorqueOut, sizeof(float)*6);
 
-	#ifdef ZR2D
-	memset(&challInfo.me.userForces[2], 0, sizeof(float)*3);
-	#endif
-
 	//Send Telemetry
-	//HERE FOR DEBUG
 	sendDebug();
 
 	return useForces;
@@ -211,30 +197,18 @@ void ZeroRoboticsGameImpl::modify2DForceTorque(float forceTorque[6])
 }
 #endif
 
-void ZeroRoboticsGameImpl::sphereCollision(float* sphereState, float* otherState, float* forceTorqueOut) {
-	float otherVFromSphereFrame[3];
-	mathVecSubtract(otherVFromSphereFrame, &sphereState[VEL_X], &otherState[VEL_X], 3);
-	float pointLoss = COLLISION_MULT * SPHERE_MASS * mathVecMagnitude(otherVFromSphereFrame, 3); // positive number
-	challInfo.me.score -= pointLoss;
-	#ifdef ALLIANCE
-	for(int i = 0; i < 3; i++) {
-		forceTorqueOut[i] += otherState[i + VEL_X] * SPHERE_MASS / SPHERE_MASS;	
-		otherState[VEL_X + i] = sphereState[i + VEL_X] * SPHERE_MASS / SPHERE_MASS;
-	}
-	#endif
-	//printf("SPHERE %d lost %f points for being reckless.\n",SPHERE_ID,pointLoss);
-	//printf("SPHERE %d's score is now %f\n",SPHERE_ID,challInfo.me.score);
-}
-
-bool ZeroRoboticsGameImpl::updateGameModeManeuver(float forceTorqueOut[6]) {
+bool ZeroRoboticsGameImpl::updateGameModeManeuver(float forceTorqueOut[6])
+{
 	float collisionInfo[2];
-
+	float geyserForces[6];
+	memset(geyserForces,0.0f,sizeof(geyserForces));
+	
 	// get state-of-health of other satellite (mainly for end of test)
 	comm_payload_soh soh_partner;
 	#if (SPHERE_ID == SPHERE1)
-	commBackgroundSOHGet(SPHERE2, &soh_partner);
+		commBackgroundSOHGet(SPHERE2, &soh_partner);
 	#else
-	commBackgroundSOHGet(SPHERE1, &soh_partner);
+		commBackgroundSOHGet(SPHERE1, &soh_partner);
 	#endif
 
 	// determine current speed of satellite, use to determine collision avoidance motion
@@ -246,67 +220,52 @@ bool ZeroRoboticsGameImpl::updateGameModeManeuver(float forceTorqueOut[6]) {
 	// a private part of the API containing a pointer to the user's API
 	//OLD LOOP PLACEMENT **********************************************************8
 
+	// GAME: before user code runs:
 	updateStates();
+	updateAnalyzer();
 
-	//before user code runs stuff
+	// GAME: user code:
 	apiImpl.zruser->loop();
 	
-	turnOffOldGeysers();
-	subtractScore();
-	//after user code runs stuff
-	
-	// TODO: Update state of the things that changed and need to be synced between SPHERES
+	// calculate forces requested by the user, before overriding with game and API functions
+	useForces = apiImpl.getForceTorque(forceTorqueOut);			// get the requested forces from the user code
 
-	useForces = useForces || apiImpl.getForceTorque(forceTorqueOut);
-	prop_time tent_times;
-	#ifdef ZRFLATFLOOR
-	ctrlMixWLoc(&tent_times, forceTorqueOut, challInfo.me.sphState, 10, 40.0f, FORCE_FRAME_INERTIAL);
-	#else
-	ctrlMixWLoc(&tent_times, forceTorqueOut, challInfo.me.sphState, 10, 20.0f, FORCE_FRAME_INERTIAL);
-	#endif
-
-	float tent_time_sum = 0;
-	for (int i = 0; i < 12; i++) {
-		tent_time_sum += tent_times.off_time[i]-tent_times.on_time[i];
-	}
-
-	// Check for fuel or energy out at this point
+	// if no fuel remaining at all, zero out all user requested forces
 	if(game->getFuelRemaining() <= 0.0f)
 	{
-		memset(forceTorqueOut,0,6*sizeof(float));
-		// anything the user has commanded is ignored, only firings would be from out-of-bounds or collision avoidance
-		useForces = false;
-		// assume there will be no firings
+		memset(forceTorqueOut,0,6*sizeof(float));		// anything the user has commanded is ignored, only firings would be from out-of-bounds or collision avoidance
+		useForces = false;													// assume there will be no firings
 	}
 
-	#ifndef ZR2D
-	//checks for collisions between spheres
-	if(dist3d(challInfo.me.zrState, challInfo.other.zrState) < SPHERE_RADIUS * 2) {
-		if(!challInfo.me.sphereCollisionActive) {
-			GAME_TRACE(("SPHERE %d collided with its opponent\n",SPHERE_ID));
-			sphereCollision(challInfo.me.zrState, challInfo.other.zrState, forceTorqueOut);
-		}
-		challInfo.me.sphereCollisionActive = true;
-	} else {
-		challInfo.me.sphereCollisionActive = false;
-	}	
-
-	#endif
-
-	//Enforce boundaries of the game
-	if (enforceBoundaries(forceTorqueOut))
+	// GAME: after user code runs:
+	
+	// update geysers and if the sat is hit, override forces
+	if (updateGeysers())
 	{
+		// for some reason I can't send forceTorqueOut as an argument,
+		// plus we need to keep memory of original push-out direction,
+		// so this function overwrites with the direction and updateGeysers keeps track of time
+		#ifdef ZR2D
+			forceTorqueOut[0] = challInfo.me.geyserForce[0];
+			forceTorqueOut[1] = challInfo.me.geyserForce[1];
+		#else
+			forceTorqueOut[2] = -GEYSER_FORCE;
+		#endif
 		useForces = true;
 	}
+	updateDrill();
+	updateScore();
 
-	//Collision avoidance
-	//check to see that its speed is not neglible.
+	//Enforce boundaries of the game
+	useForces = useForces || (enforceBoundaries(forceTorqueOut));
+
+	//Collision avoidance when speed is not negligible
 	if (speed > 0.01f) {
-		challInfo.me.collisionActive = ctrlAvoidWithOverride(challInfo.me.sphState,&challInfo.other.sphState,1,forceTorqueOut,collisionInfo,3);
+		useForces = useForces || ctrlAvoidWithOverride(challInfo.me.sphState,&challInfo.other.sphState,1,forceTorqueOut,collisionInfo,3);
 	}
 
 	//------Thruster control------//
-	// Run standard mixer to get fuel consumption
+	// Run standard mixer to get fuel consumption based on user, game, and boundaries/collision avoidance requested forces
 	prop_time times;
 	ctrlMixWLoc(&times, forceTorqueOut, challInfo.me.sphState, 10, 20.0f, FORCE_FRAME_INERTIAL);
 
@@ -314,27 +273,23 @@ bool ZeroRoboticsGameImpl::updateGameModeManeuver(float forceTorqueOut[6]) {
 	for (int i=0; i<12; i++)
 	{
 		float thrusterTime = times.off_time[i]-times.on_time[i];
-		if (thrusterTime > 300.0f) {
-			//printf("thrust: %f", thrusterTime);
-		}
 		challInfo.me.fuelUsed += thrusterTime / 1000.0f;
 
 		//Protect against NAN or INF hacking
-		if (challInfo.me.fuelUsed < -0.0f)
+		if (challInfo.me.fuelUsed < 0.0f)
 		{
-			//printf("SPHERE %i: %f, %f, %f \n", SPHERE_ID, challInfo.me.zrState[0], challInfo.me.zrState[0], challInfo.me.zrState[0]);
-			DEBUG(("WARNING: invalid forces/torques applied to satellite at t=%d. Fuel will be set to 0. Check your code for errors.\n", challInfo.currentTime));
-			//printf("WARNING: invalid forces/torques applied to satellite %d at t=%d. Fuel will be set to 0. Check your code for errors.\n",SPHERE_ID,challInfo.currentTime);
+			DEBUG(("WARNING: invalid forces/torques applied to satellite at. Fuel will be set to 0. Check your code for errors.\n"));
 			challInfo.me.fuelUsed = PROP_ALLOWED_SECONDS;
 		}
 	}
+
 	#ifdef ZR2D
 	modify2DForceTorque(forceTorqueOut);
 	useForces = true;
 	#endif
 
 	//------Game end conditions------//
-	if (challInfo.currentTime >= (MAX_GAME_TIME))
+	if (apiImpl.api->getTime() >= (MAX_GAME_TIME))
 		ctrlManeuverNumSet(202);
 
 	return useForces;
@@ -363,11 +318,21 @@ bool ZeroRoboticsGameImpl::updateGameOverManeuver(float forceTorqueOut[6], unsig
 	useForces = ctrlAvoidWithOverride(challInfo.me.sphState, &challInfo.other.sphState, 1, forceTorqueOut, collisionInfo, 3) > 0;
 	useForces = useForces || enforceBoundaries(forceTorqueOut);
 
-	// break ties by making a tiny change based on the random state
+	// break ties by:
+	//  - most number of samples picked up
+	//  - one closest to the Base at end of game
 	if (myScore == otherScore)
 	{
-		challInfo.me.score  -= (0.01f * sqrtf((challInfo.me.zrState[0]*challInfo.me.zrState[0])+(challInfo.me.zrState[1]*challInfo.me.zrState[1])+(challInfo.me.zrState[2]*challInfo.me.zrState[2])));
-		GAME_TRACE (("Tie Breaker (%12.10f = %12.10f), new score = %12.10f | ", myScore, otherScore, challInfo.me.score));
+		if (challInfo.me.total_samples > challInfo.other.total_samples)
+		{
+			challInfo.me.score += 0.01f;
+			GAME_TRACE (("Tie Breaker (%12.10f = %12.10f) MORE SAMPLES, new score = %12.10f | ", myScore, otherScore, challInfo.me.score));
+		}
+		else if (challInfo.me.total_samples == challInfo.other.total_samples)
+		{
+			challInfo.me.score  -= (0.01f * sqrtf((challInfo.me.zrState[0]*challInfo.me.zrState[0])+(challInfo.me.zrState[1]*challInfo.me.zrState[1])+(challInfo.me.zrState[2]*challInfo.me.zrState[2])));
+			GAME_TRACE (("Tie Breaker (%12.10f = %12.10f) CLOSEST TO BASE, new score = %12.10f | ", myScore, otherScore, challInfo.me.score));
+		}
 	}
 
 	// get final score
@@ -379,14 +344,12 @@ bool ZeroRoboticsGameImpl::updateGameOverManeuver(float forceTorqueOut[6], unsig
 		if (myScore > otherScore)
 		result += 10;
 		finalResult = (result + apiImpl.getTeamId() + 1);
-		useForces = false;
 	}
 
 	// terminate after we find the final result & timeout (4s)
 	if (finalResult && (ctrlManeuverTimeGet() > 4000))
 	{
-		GAME_TRACE (("GAME ENDED! Final Score Float: %10.8f / Integer: %d | Test Result %d | ", myScore, result, finalResult));
-		//printf("Sphere %d score is: %f \n",SPHERE_ID,challInfo.me.score);
+		GAME_TRACE (("GAME ENDED! Final Score Float: %10.8f / Integer: %d | Test Result %d", myScore, result, finalResult));
 		ctrlManeuverTerminate();
 	}
 	return useForces;
@@ -418,39 +381,22 @@ bool ZeroRoboticsGameImpl::enforceBoundaries(float forceTorqueOut[6])
 
 void ZeroRoboticsGameImpl::limitDirection(state_vector ctrlState, float ctrlControl[6], unsigned int idx, float dir)
 {
-// if command is to move out further in same direction as limit
+	// if command is to move out further in same direction as limit
 	if ((ctrlControl[idx]*dir >= 0.0f) || (ctrlState[VEL_X+idx]*dir >= 0.005f))
 	{
 		ctrlControl[idx] = -1.0f * OOBgain * ctrlState[VEL_X+idx];  // slow down to get 0 velocity (ignore position)
 	}
 }
 
-/******************Collision Avoidance Functions************************/
-void ZeroRoboticsGameImpl::resolveCollision(float zrState[12], float forceTorqueOut[6])
-{
-	for (int i=0; i<3; i++)
-	{
-		if (zrState[i] > 0)
-		limitDirection(zrState, forceTorqueOut, i, -1.0f);
-		else if (zrState[i] < 0)
-		limitDirection(zrState, forceTorqueOut, i, 1.0f);
-	}
-}
-
-float ZeroRoboticsGameImpl::dist3d(float* pos1, float* pos2) const
-{
-	float tmpVec[3];
-	mathVecSubtract(tmpVec,static_cast<float*>(pos1),static_cast<float*>(pos2),3);
-	return mathVecMagnitude(tmpVec,3);
-}
-
 /*************************Score functions***********************/
 
-void ZeroRoboticsGameImpl::subtractScore() {
-    // TODO: Other things that might make the user lose points
-    if(challInfo.me.incorrectDrill) {
-        challInfo.me.score -= 1;
-    }
+void ZeroRoboticsGameImpl::updateScore(){
+	// TODO: Other things that might make the user lose points
+	if (challInfo.me.drillError)
+	{
+		GAME_TRACE(("Score PENALTY: Drill Error! (-%3.2f points)", SCORE_DRILL_PENALTY));
+		challInfo.me.score -= SCORE_DRILL_PENALTY;
+	}
 }
 
 float ZeroRoboticsGame::getScore()
@@ -475,11 +421,6 @@ float ZeroRoboticsGame::getFuelRemaining()
 	return total;
 }
 
-int ZeroRoboticsGame::getCurrentTime()
-{
-	return pimpl.challInfo.currentTime;
-}
-
 void ZeroRoboticsGame::sendMessage(unsigned char inputMsg)
 {
 	pimpl.challInfo.me.message = (short)inputMsg;
@@ -489,8 +430,3 @@ unsigned char ZeroRoboticsGame::receiveMessage()
 {
 	return (unsigned char)pimpl.challInfo.other.message;
 }
-
-//TODO: Dock function for SPHERES
-
-/************USER DOCKING FUNCTIONS**************/
-

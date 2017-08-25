@@ -64,15 +64,7 @@ class ZeroRoboticsGame {
    * \return An unsigned char containing a value from 0-255.
    */
   unsigned char receiveMessage();
-  
 
-  /**
-   * Checks if the satellite is facing the correct side of an item.
-   *
-   * \param itemID the item to be checked
-   */
-  bool isFacingCorrectItemSide(int itemID);
-  
   /**
    * Returns the player's current score.
    * 
@@ -85,13 +77,8 @@ class ZeroRoboticsGame {
    */
   float getOtherScore();    //returns other.score
 
-   /**
-    * Returns the time.
-    */
-  int getCurrentTime();
-
   // Constructor for the game.  The provided references should be singleton instances.
-  ZeroRoboticsGame(ZeroRoboticsGameImpl &impl, ZeroRoboticsAPIImpl &apiImpl) ;
+  ZeroRoboticsGame(ZeroRoboticsGameImpl &impl, ZeroRoboticsAPIImpl &apiImpl);
 
   /*************GRID USER FUNCTIONS***************/
 
@@ -100,33 +87,46 @@ class ZeroRoboticsGame {
    * \param pos float array length 3 (x,y,z)
    * \return Number of drill times
    */
-  int getDrills(float pos[3]);
+  unsigned int getDrills(float pos[2]);
+	unsigned int getDrills(int grid[2]);
+	
+	/**
+	 * Returns true if a drill error has occured since drillStart was called and has not been
+	 * reset by calling drillStop.
+	 */
+	bool getDrillError();
+
+	/**
+	 * Returns true if the drill is enabled.
+	 */
+	bool getDrillEnabled();
 
   /**
    * Used to obtain number of active geysers
    * \return Number of active geysers
    */
-  int getNumGeysers();
+  unsigned int getNumGeysers();
 
   /**
    * Used to obtain list of known geysers.
    * \param locations Where the locations are updated. List of 10 geysers with location or invalid location.
    */
-  void getGeyserLocations(float locations[10][2]);
+  void getGeyserLocations(int grid[10][2]);
 
   /**
    * Used for finding if geyser is present at current location
    * \param position float array length 3 (x,y,z). Location passed by the user.
    * \return True if geyser is present. False otherwise.
    */
-  bool isGeyserHere(float position[3]);
+  bool isGeyserHere(float pos[2]);
+  bool isGeyserHere(int grid[2]);
 
   /**
    * Used to find if the station is correctly located above the base station and can drop a sample for points.
    * \param pos float array length 3 (x,y,z), 
    * \return True if the satellite is correctly located above the base station. False otherwise.
    */
-  bool atBaseStation(float pos[3]);
+	bool atBaseStation();
 
   /**************BACTERIA SAMPLE USER FUNCTIONS***********/
 
@@ -155,19 +155,12 @@ class ZeroRoboticsGame {
    */
   int pickupSample();
 
-  /**
-   *  Tries to deliver the sample specified by the ID if the sample is held and player is at base station
-   *  \param sampleID ID of the sample that is being delivered
-   *  \return True if sample successfully delivered. False otherwise.
-   */
-  bool deliverSample(int sampleID);
-
-  /**
-   *  Discards the sample specified by the ID if the sample is held.
-   *  \param sampleID ID of the sample that is being delivered
-   *  \return True if sample successfully discarded. False otherwise.
-   */
-  bool discardSample(int sampleID);
+	/**
+	 * Drops the indicated sample at the current location of the satellite
+	 * If the satellite is at the base station the sample is analyzed and points are collected
+	 * Otherise the sample is discarded.
+	 */
+	float dropSample(int sampleID);
 
   /**************DRILL USER FUNCTIONS********************/
 
@@ -182,21 +175,23 @@ class ZeroRoboticsGame {
    */
   bool stopDrill();
 
+	/**
+	 * Returns true if a sample is ready for pickup
+	 */
+	bool checkSample();
+
   /*************ANALYZER USER FUNCTIONS******************/
 
-  /**
-   * Takes analyzerID as either 0 or 1, defines pos as the vector of the position of that analyzer
-   * \param pos float array length 3 (x,y,z), where position is returned
-   * \param analyzerID The ID of the analyzer you want to obtain
-   */
-  void getAnalyzerPos(float pos[3], int analyzerID);
-
+	/**
+	 * Returns a boolean array indicating if the analyzers have been picked up.
+	 */
+	void getAnalyzer(bool pickedUp[2]);
+	
   /**
    * Used to see if an analyzer is held
    * \return AnalyzerID if the SPHERES has the Sample Analyzer Item 0 otherwise
    */
   int hasAnalyzer();
-  void obtainAnalyzer(int analyzerID);
 
 private:
   // REQUIRED: reference to the game implementation, do not delete!
