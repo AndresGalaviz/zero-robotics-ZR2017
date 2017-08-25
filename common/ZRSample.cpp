@@ -27,6 +27,7 @@ void ZeroRoboticsGame::getSamplesHeld(bool samples[MAX_SAMPLE_NUMBER])
 
 void ZeroRoboticsGame::getConcentrations(float concentrations[MAX_SAMPLE_NUMBER])
 {
+<<<<<<< HEAD
 	for (int i = 0; i < MAX_SAMPLE_NUMBER; i++)
 	{
 		// must have the analyzer in order to get concentrations if not dropping at Base Station (dropSample returns the conc when delivering at Base)
@@ -37,6 +38,17 @@ void ZeroRoboticsGame::getConcentrations(float concentrations[MAX_SAMPLE_NUMBER]
 		else
 			concentrations[i] = -1.0f;		// sample not yet analyzed
 	}
+=======
+    for(int i = 0; i < MAX_SAMPLE_NUMBER; i++) {
+        if(pimpl.challInfo.me.samples.samplesAnalyzed[MAX_SAMPLE_NUMBER - i - 1]) {
+            concentrations[i] = pimpl.challInfo.me.samples.sampleConcentrations[i];
+        } else if (pimpl.challInfo.me.samples.samplesHeld[MAX_SAMPLE_NUMBER - i - 1]) {
+            concentrations[i] = -2;
+        } else {
+            concentrations[i] = -1;
+        }
+    }
+>>>>>>> 84b88435f6813f0dcde9e18f4496ed50ce0a9a5f
 }
 
 bool ZeroRoboticsGame::checkSample()

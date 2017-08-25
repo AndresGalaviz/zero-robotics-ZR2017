@@ -193,6 +193,11 @@ class ZeroRoboticsGame {
    */
   int hasAnalyzer();
 
+  /**
+  *Used to score samples if docked to the base station
+  **/
+  //void SampleScoring();
+
 private:
   // REQUIRED: reference to the game implementation, do not delete!
   ZeroRoboticsGameImpl &pimpl;
